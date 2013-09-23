@@ -547,7 +547,7 @@ int http_server_sendfile2(const char *filename, const char *additional_headers, 
         http_server_header_start(HTTP_STATUS_200, mime_types_by_ext(ext));
     else
         http_server_header_start(HTTP_STATUS_200, mime_types_by_filename(filename));
-    vmbuf_sprintf(&ctx->header, "%s%lu", CONTENT_LENGTH, st.st_size);
+    vmbuf_sprintf(&ctx->header, "%s%jd", CONTENT_LENGTH, (intmax_t)st.st_size);
     if (additional_headers)
         vmbuf_strcpy(&ctx->header, additional_headers);
 
@@ -615,7 +615,7 @@ int http_server_generate_dir_list(const char *URI) {
             if (t)
                 vmbuf_strftime(payload, "%F %T", t);
             vmbuf_strcpy(payload, "</td>");
-            vmbuf_sprintf(payload, "<td>%lu</td>", st.st_size);
+            vmbuf_sprintf(payload, "<td>%jd</td>", (intmax_t)st.st_size);
             vmbuf_strcpy(payload, "</tr>");
         }
         closedir(d);

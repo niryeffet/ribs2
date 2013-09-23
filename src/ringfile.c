@@ -43,7 +43,7 @@ static inline int _ringfile_read_header(const char *filename, struct ringfile_he
     if (0 > fstat(fd, &st))
         return LOGGER_PERROR("fstat: %d, %s", fd, filename), close(fd), -1;
     if (st.st_size < (off_t)sizeof(struct ringfile_header))
-        return LOGGER_PERROR("invalid size: %zd < %zu", st.st_size, sizeof(struct ringfile_header)), close(fd), -1;
+        return LOGGER_PERROR("invalid size: %jd < %zu", (intmax_t)st.st_size, sizeof(struct ringfile_header)), close(fd), -1;
     void *mem = mmap(NULL, header_size, PROT_READ, MAP_SHARED, fd, 0);
     if (MAP_FAILED == mem)
         return LOGGER_PERROR("mmap"), close(fd), -1;
