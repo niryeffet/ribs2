@@ -62,6 +62,7 @@ SSTRL(CONNECTION_KEEPALIVE, "Keep-Alive");
 SSTRL(CONTENT_LENGTH, "\r\nContent-Length: ");
 SSTRL(SET_COOKIE, "\r\nSet-Cookie: ");
 SSTRL(COOKIE_VERSION, "Version=\"1\"");
+SSTRL(HTTP_LOCATION, "\r\nLocation: ");
 /* 1xx */
 SSTRL(HTTP_STATUS_100, "100 Continue");
 SSTRL(EXPECT_100, "\r\nExpect: 100");
@@ -264,14 +265,18 @@ void http_server_response(const char *status, const char *content_type) {
 }
 
 void http_server_response_sprintf(const char *status, const char *content_type, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    http_server_response_vsprintf(status, content_type, format, ap);
+    va_end(ap);
+}
+
+void http_server_response_vsprintf(const char *status, const char *content_type, const char *format, va_list ap) {
     struct http_server_context *ctx = http_server_get_context();
     vmbuf_reset(&ctx->header);
     vmbuf_reset(&ctx->payload);
     http_server_header_start(status, content_type);
-    va_list ap;
-    va_start(ap, format);
     vmbuf_vsprintf(&ctx->payload, format, ap);
-    va_end(ap);
     http_server_header_content_length();
     http_server_header_close();
 }
@@ -279,6 +284,35 @@ void http_server_response_sprintf(const char *status, const char *content_type, 
 void http_server_header_content_length(void) {
     struct http_server_context *ctx = http_server_get_context();
     vmbuf_sprintf(&ctx->header, "%s%zu", CONTENT_LENGTH, vmbuf_wlocpos(&ctx->payload));
+}
+
+void http_server_header_redirect(const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    http_server_header_redirect2(format, ap);
+    va_end(ap);
+}
+
+void http_server_header_redirect2(const char *format, va_list ap) {
+    struct http_server_context *ctx = http_server_get_context();
+    vmbuf_strcpy(&ctx->header, HTTP_LOCATION);
+    vmbuf_vsprintf(&ctx->header, format, ap);
+}
+
+void http_server_redirect(const char *status, const char *content_type, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    http_server_redirect2(status, content_type, format, ap);
+    va_end(ap);
+}
+
+void http_server_redirect2(const char *status, const char *content_type, const char *format, va_list ap) {
+    struct http_server_context *ctx = http_server_get_context();
+    vmbuf_reset(&ctx->header);
+    http_server_header_start(status, content_type);
+    http_server_header_redirect(format, ap);
+    http_server_header_content_length();
+    http_server_header_close();
 }
 
 #define READ_FROM_SOCKET()                                              \
