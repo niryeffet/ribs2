@@ -110,7 +110,12 @@ int mysql_helper_tx_rollback(struct mysql_helper *mysql_helper)
  *    s:  MYSQL_TYPE_STRING
  *    S:  MYSQL_TYPE_STRING, buffer size followed by pointer to the data
  *
+ *    note that strings are (char *) for input parameters and (char **) for output parameters
+ *
  * Examples:
+ *     int id;
+ *     char *name, *new_name, *status;
+ *
  *     SSTR(query, "SELECT name FROM table WHERE id = ?");
  *     mysql_helper_stmt(&mh, query, SSTRLEN(query), "d", "s", &id, &name);
  *
