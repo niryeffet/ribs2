@@ -34,7 +34,7 @@ struct ringfile_header {
     size_t reserved_size;
 };
 
-#define RINGFILE_INITIALIZER { 0, 0, 0, NULL }
+#define RINGFILE_INITIALIZER { NULL, NULL }
 #define RINGFILE_INIT(x) (x) = (struct ringfile)RINGFILE_INITIALIZER
 
 int ringfile_init(struct ringfile *rb, const char *filename, size_t size, size_t reserved);
