@@ -37,6 +37,11 @@ _RIBS_INLINE_ void list_init(struct list *list) {
     list->prev = list;
 }
 
+_RIBS_INLINE_ void list_clear(struct list *list) {
+    list->next = NULL;
+    list->prev = NULL;
+}
+
 _RIBS_INLINE_ void list_insert_head(struct list *list, struct list *entry) {
     entry->next = list->next;
     entry->prev = list;
