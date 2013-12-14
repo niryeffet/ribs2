@@ -209,8 +209,7 @@ _RIBS_INLINE_ int TEMPLATE(VMBUF_T,strcpy)(struct VMBUF_T *vmb, const char *src)
 
 _RIBS_INLINE_ void TEMPLATE(VMBUF_T,remove_last_if)(struct VMBUF_T *vmb, char c) {
     char *loc = TEMPLATE(VMBUF_T,wloc)(vmb);
-    --loc;
-    if (vmb->write_loc > 0 && *loc == c) {
+    if (vmb->write_loc > 0 && *--loc == c) {
         --vmb->write_loc;
         *loc = 0;
     }
