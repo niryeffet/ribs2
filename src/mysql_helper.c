@@ -107,6 +107,7 @@ int mysql_helper_tx_rollback(struct mysql_helper *mysql_helper)
  * Valid format specifies:
  *    d:  MYSQL_TYPE_LONG (signed)
  *    D:  MYSQL_TYPE_LONG (unsigned)
+ *    f:  MYSQL_TYPE_DOUBLE
  *    s:  MYSQL_TYPE_STRING
  *    S:  MYSQL_TYPE_STRING, buffer size followed by pointer to the data
  *
@@ -183,6 +184,11 @@ int mysql_helper_stmt(struct mysql_helper *mysql_helper,
                 pnulls[i] = (pbind_ptr->buffer == NULL);
                 pbind_ptr->is_unsigned = isupper(c) ? 1 : 0;
                 break;
+            case 'f':
+                ptypes[i] = MYSQL_TYPE_DOUBLE;
+                pbind_ptr->buffer = va_arg(ap, double *);
+                pnulls[i] = (pbind_ptr->buffer == NULL);
+                break;
             case 's':
                 ptypes[i] = MYSQL_TYPE_STRING;
                 if (isupper(c)) {
@@ -234,6 +240,9 @@ int mysql_helper_stmt(struct mysql_helper *mysql_helper,
             case 'd':
                 ftypes[i] = MYSQL_TYPE_LONG;
                 break;
+            case 'f':
+                ftypes[i] = MYSQL_TYPE_DOUBLE;
+                break;
             case 's':
                 ftypes[i] = MYSQL_TYPE_STRING;
                 break;
@@ -275,6 +284,10 @@ int mysql_helper_stmt(struct mysql_helper *mysql_helper,
             case 'd':
                 bind_ptr->buffer = va_arg(ap, int *);
                 bind_ptr->buffer_length = sizeof(int);
+                break;
+            case 'f':
+                bind_ptr->buffer = va_arg(ap, double *);
+                bind_ptr->buffer_length = sizeof(double);
                 break;
             case 's':
                 str = va_arg(ap, char **);
