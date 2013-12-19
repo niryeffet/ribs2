@@ -27,6 +27,7 @@ struct list {
 };
 
 #define LIST_INITIALIZER(name) { &(name), &(name) }
+#define LIST_NULL_INITIALIZER { NULL, NULL }
 #define LIST_CREATE(name) struct list name = LIST_INITIALIZER(name);
 
 #define LIST_ENTRY(ptr, type, member)                   \
