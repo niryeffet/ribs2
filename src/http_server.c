@@ -98,6 +98,11 @@ static void http_server_idle_handler(void) {
 }
 
 int http_server_init(struct http_server *server) {
+    server->bind_addr = htonl(INADDR_ANY);
+    return http_server_init2(server);
+}
+
+int http_server_init2(struct http_server *server) {
     /*
      * one time global initializers
      */
@@ -154,7 +159,7 @@ int http_server_init(struct http_server *server) {
     memset(&addr, 0, sizeof(struct sockaddr_in));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(server->port);
-    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_addr.s_addr = server->bind_addr;
     if (0 > bind(lfd, (struct sockaddr *)&addr, sizeof(addr)))
         return LOGGER_PERROR("bind"), -1;
 

@@ -60,14 +60,16 @@ struct http_server {
     size_t init_payload_size;
     size_t max_req_size;
     size_t context_size;
+    uint32_t bind_addr;
 };
 
-#define HTTP_SERVER_INIT_DEFAULTS .stack_size = 0, .num_stacks = 0, .init_request_size = 8*1024, .init_header_size = 8*1024, .init_payload_size = 8*1024, .max_req_size = 0, .context_size = 0, .timeout_handler.timeout = 60000
+#define HTTP_SERVER_INIT_DEFAULTS .stack_size = 0, .num_stacks = 0, .init_request_size = 8*1024, .init_header_size = 8*1024, .init_payload_size = 8*1024, .max_req_size = 0, .context_size = 0, .timeout_handler.timeout = 60000, .bind_addr = INADDR_ANY
 #define HTTP_SERVER_INITIALIZER { HTTP_SERVER_INIT_DEFAULTS }
 
 #define HTTP_SERVER_NOT_FOUND (-2)
 
 int http_server_init(struct http_server *server);
+int http_server_init2(struct http_server *server);
 int http_server_init_acceptor(struct http_server *server);
 void http_server_header_start(const char *status, const char *content_type);
 void http_server_header_start_no_body(const char *status);
