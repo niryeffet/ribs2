@@ -230,7 +230,7 @@ int http_file_server_run2(struct http_file_server *fs, struct http_headers *head
     vmbuf_strcpy(&ctx->header, "\r\n\r\n");
     int res = 0;
     if (include_payload && 0 > (res = http_server_sendfile_payload(ffd, st.st_size)))
-        LOGGER_PERROR(realname);
+        LOGGER_PERROR("%s", realname);
     close(ffd);
     return res;
 }

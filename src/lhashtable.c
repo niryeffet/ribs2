@@ -37,10 +37,10 @@ int lhashtable_init(struct lhashtable *lht, const char *filename) {
             return LOGGER_ERROR("corrupted file (size): %s", filename), -1;
         lht->fd = open(filename, O_RDWR, 0644);
         if (0 > lht->fd)
-            return LOGGER_PERROR(filename), -1;
+            return LOGGER_PERROR("%s", filename), -1;
         lht->mem = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, lht->fd, 0);
         if (MAP_FAILED == lht->mem)
-            return LOGGER_PERROR(filename), close(lht->fd), lht->fd = -1;
+            return LOGGER_PERROR("%s", filename), close(lht->fd), lht->fd = -1;
         if (0 != memcmp(LHT_SIGNATURE, lht->mem, sizeof(LHT_SIGNATURE))) {
             LOGGER_ERROR("corrupted file (signature): %s", filename);
             return close(lht->fd), lht->fd = -1, munmap(lht->mem, st.st_size), -1;
@@ -53,15 +53,15 @@ int lhashtable_init(struct lhashtable *lht, const char *filename) {
     unlink(filename);
     lht->fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (0 > lht->fd)
-        return LOGGER_PERROR(filename), -1;
+        return LOGGER_PERROR("%s", filename), -1;
     /* initial size */
     size_t size = sizeof(struct lhashtable_header);
     _LHT_ALIGN_P2(size, LHT_BLOCK_SIZE);
     if (0 > ftruncate(lht->fd, size))
-        return LOGGER_PERROR(filename), -1;
+        return LOGGER_PERROR("%s", filename), -1;
     lht->mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, lht->fd, 0);
     if (MAP_FAILED == lht->mem)
-        return LOGGER_PERROR(filename), close(lht->fd), lht->fd = -1;
+        return LOGGER_PERROR("%s", filename), close(lht->fd), lht->fd = -1;
     struct lhashtable_header *header = (struct lhashtable_header *)lht->mem;
     header->write_loc = 0;
     header->capacity = size;

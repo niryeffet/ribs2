@@ -79,7 +79,7 @@ void http_server_set_session_cookie(const char *name, const char *value, const c
 struct vmbuf *http_server_begin_cookie(const char *name);
 struct vmbuf *http_server_end_cookie(time_t expires, const char *domain, const char *path);
 void http_server_response(const char *status, const char *content_type);
-void http_server_response_sprintf(const char *status, const char *content_type, const char *format, ...);
+void http_server_response_sprintf(const char *status, const char *content_type, const char *format, ...) __attribute__ ((format (gnu_printf, 3, 4)));
 void http_server_response_vsprintf(const char *status, const char *content_type, const char *format, va_list ap);
 void http_server_header_content_length(void);
 void http_server_header_redirect(const char *format, ...);

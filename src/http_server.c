@@ -532,7 +532,7 @@ int http_server_sendfile2(const char *filename, const char *additional_headers, 
         return HTTP_SERVER_NOT_FOUND;
     struct stat st;
     if (0 > fstat(ffd, &st)) {
-        LOGGER_PERROR(filename);
+        LOGGER_PERROR("%s", filename);
         close(ffd);
         return HTTP_SERVER_NOT_FOUND;
     }
@@ -555,7 +555,7 @@ int http_server_sendfile2(const char *filename, const char *additional_headers, 
     int res = http_server_sendfile_payload(ffd, st.st_size);
     close(ffd);
     if (0 > res)
-        LOGGER_PERROR(filename);
+        LOGGER_PERROR("%s", filename);
     return res;
 }
 

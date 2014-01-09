@@ -397,7 +397,7 @@ int mysql_helper_stmt_col_map(struct mysql_helper *mysql_helper,
     size_t num_all_params = nparams + nsparams;
     uint32_t n = mysql_stmt_param_count(mysql_helper->stmt);
     if (num_all_params != n) {
-        LOGGER_ERROR("num params != num params in query (%u != %u)", num_all_params, n);
+        LOGGER_ERROR("num params != num params in query (%zu != %u)", num_all_params, n);
         return -1;
     }
     struct mysql_helper_column_map *p, *rend = result_map + nresult;
@@ -424,7 +424,7 @@ int mysql_helper_stmt_col_map(struct mysql_helper *mysql_helper,
             return report_stmt_error(mysql_helper);
         n = mysql_num_fields(rs);
         if (n != nresult) {
-            LOGGER_ERROR("num args != num fields in query (%u != %u)", nresult, n);
+            LOGGER_ERROR("num args != num fields in query (%zu != %u)", nresult, n);
             mysql_free_result(rs);
             return -1;
         }
