@@ -18,12 +18,12 @@
     along with RIBS.  If not, see <http://www.gnu.org/licenses/>.
 */
 #define RINGFILE_HEADER (ringfile_get_header(rb))
-_RIBS_INLINE_ void *ringfile_get_reserved(struct ringfile *rb) {
-    return rb->mem + sizeof(struct ringfile_header);
-}
-
 _RIBS_INLINE_ struct ringfile_header *ringfile_get_header(struct ringfile *rb) {
     return rb->mem;
+}
+
+_RIBS_INLINE_ void *ringfile_get_reserved(struct ringfile *rb) {
+    return RINGFILE_HEADER->reserved;
 }
 
 _RIBS_INLINE_ void *ringfile_wloc(struct ringfile *rb) {

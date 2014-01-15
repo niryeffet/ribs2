@@ -32,12 +32,14 @@ struct ringfile_header {
     size_t read_loc;
     size_t write_loc;
     size_t reserved_size;
+    char reserved[];
 };
 
 #define RINGFILE_INITIALIZER { NULL, NULL }
 #define RINGFILE_INIT(x) (x) = (struct ringfile)RINGFILE_INITIALIZER
 
 int ringfile_init(struct ringfile *rb, const char *filename, size_t size, size_t reserved);
+int ringfile_init_with_resize(struct ringfile *rb, const char *filename, size_t size, size_t reserved, void (*evict_one_rec)(struct ringfile *));
 int ringfile_free(struct ringfile *rb);
 _RIBS_INLINE_ void *ringfile_get_reserved(struct ringfile *rb);
 _RIBS_INLINE_ void *ringfile_wloc(struct ringfile *rb);
