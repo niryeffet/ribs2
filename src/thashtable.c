@@ -244,7 +244,7 @@ thashtable_rec_t *thashtable_remove(struct thashtable *tht, const void *key, siz
     return 0;
 }
 
-int thashtable_foreach(struct thashtable *tht, int (*func)(void *rec)) {
+int thashtable_foreach(struct thashtable *tht, int (*func)(thashtable_rec_t *rec)) {
     uint32_t capacity = tht->mask + 1;
     uint32_t num_buckets = ilog2(capacity) - THASHTABLE_INITIAL_SIZE_BITS + 1;
     uint32_t b;

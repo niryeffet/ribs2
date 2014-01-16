@@ -1,6 +1,6 @@
 struct tht_entry {
     uint32_t hashcode;
-    void *rec;
+    thashtable_rec_t *rec;
 };
 
 struct thashtable {
