@@ -11,7 +11,7 @@ struct thashtable *thashtable_create(void) {
     struct thashtable *tht = ribs_malloc(sizeof(struct thashtable));
     tht->mask = THASHTABLE_INITIAL_SIZE - 1;
     tht->size = 0;
-    tht->buckets[0] = ribs_calloc(1, THASHTABLE_INITIAL_SIZE * sizeof(struct tht_entry));
+    tht->buckets[0] = ribs_calloc(THASHTABLE_INITIAL_SIZE, sizeof(struct tht_entry));
     return tht;
 }
 
@@ -54,7 +54,7 @@ static inline void _thashtable_move_buckets_range(struct thashtable *tht, uint32
 static inline int _thashtable_grow(struct thashtable *tht) {
     uint32_t capacity = tht->mask + 1;
     uint32_t il2 = ilog2(capacity);
-    tht->buckets[il2 - THASHTABLE_INITIAL_SIZE_BITS + 1] = ribs_malloc(capacity * sizeof(struct tht_entry));
+    tht->buckets[il2 - THASHTABLE_INITIAL_SIZE_BITS + 1] = ribs_calloc(capacity, sizeof(struct tht_entry));
     uint32_t new_mask = (capacity << 1) - 1;
     uint32_t b = 0;
     for (; 0 != _thashtable_bucket(tht, b)->rec; ++b);
