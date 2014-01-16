@@ -243,3 +243,19 @@ thashtable_rec_t *thashtable_remove(struct thashtable *tht, const void *key, siz
     }
     return 0;
 }
+
+int thashtable_foreach(struct thashtable *tht, int (*func)(void *rec)) {
+    uint32_t capacity = tht->mask + 1;
+    uint32_t num_buckets = ilog2(capacity) - THASHTABLE_INITIAL_SIZE_BITS + 1;
+    uint32_t b;
+    uint32_t vect_size = THASHTABLE_INITIAL_SIZE;
+    for (b = 0; b < num_buckets; ++b) {
+        struct tht_entry *hte = tht->buckets[b], *htend = hte + vect_size;
+        for (; hte != htend; ++hte) {
+            if (hte->rec && 0 > func(hte->rec))
+                return -1;
+        }
+        if (b) vect_size <<= 1;
+    }
+    return 0;
+}

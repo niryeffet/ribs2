@@ -14,6 +14,7 @@ thashtable_rec_t *thashtable_put(struct thashtable *tht, const void *key, size_t
 thashtable_rec_t *thashtable_insert_alloc(struct thashtable *tht, const void *key, size_t key_len, size_t val_len);
 thashtable_rec_t *thashtable_lookup(struct thashtable *tht, const void *key, size_t key_len);
 thashtable_rec_t *thashtable_remove(struct thashtable *tht, const void *key, size_t key_len);
+int thashtable_foreach(struct thashtable *tht, int (*func)(void *rec));
 
 static inline void *thashtable_get_key(thashtable_rec_t *rec);
 static inline uint32_t thashtable_get_key_size(thashtable_rec_t *rec);
