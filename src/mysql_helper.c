@@ -559,11 +559,9 @@ int mysql_helper_generate_insert(struct vmbuf *outbuf, const char *table,
     }
     for (i = 0; i < nfixed_values; ++i)
         vmbuf_sprintf(outbuf, "%s,", fixed_values[i].data.custom_str);
-    vmbuf_remove_last_if(outbuf, ',');
-    vmbuf_strcpy(outbuf, ")");
+    vmbuf_replace_last_if(outbuf, ',', ')');
     return 0;
 }
-
 
 int mysql_helper_generate_update(struct vmbuf *outbuf, const char *table,
                                  struct mysql_helper_column_map *params, size_t nparams,
