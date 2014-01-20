@@ -29,8 +29,11 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <zlib.h>
 #include <libgen.h>
+
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif
 
 SSTRL(RIBS_GZ_EXT, "._ribs_gz_");
 
@@ -134,6 +137,7 @@ int http_file_server_run2(struct http_file_server *fs, struct http_headers *head
     int ffd;
     int compressed;
     struct stat st, orig_st;
+#ifdef HAVE_ZLIB
     if (0 != (headers->accept_encoding_mask & HTTP_AE_GZIP) && hashtable_lookup(&fs->ht_ext_whitelist, ext, strlen(ext))) {
         if (0 > stat(realname, &orig_st))
             return HTTP_FILE_SERVER_ERROR(404), -1;
@@ -185,7 +189,9 @@ int http_file_server_run2(struct http_file_server *fs, struct http_headers *head
             break;
         }
         compressed = 1;
-    } else {
+    } else
+#endif
+    {
         compressed = 0;
         ffd = open(realname, O_RDONLY);
         if (0 > ffd)

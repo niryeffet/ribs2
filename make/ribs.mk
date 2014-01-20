@@ -25,6 +25,10 @@ else
 OBJ_DIR=../obj/$(OBJ_SUB_DIR)
 endif
 
+ifneq ($(wildcard /usr/include/zlib.h),)
+CFLAGS+=-DHAVE_ZLIB
+endif
+
 LDFLAGS+=-L../lib
 CFLAGS+=$(OPTFLAGS) -ggdb3 -W -Wall -Werror
 GCCVER_GTE_4_7=$(shell expr `gcc -dumpversion` \>= 4.7)
