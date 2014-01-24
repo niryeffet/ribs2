@@ -25,7 +25,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <fcntl.h>
-#include <inttypes.h>
 /*
   TODO: move to daemonize or somewhere else...
 int logger_create(const char *logfile) {

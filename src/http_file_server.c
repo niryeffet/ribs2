@@ -212,7 +212,7 @@ int http_file_server_run2(struct http_file_server *fs, struct http_headers *head
     gmtime_r(&orig_st.st_mtime, &tm);
     char etag[128];
     int n = strftime(etag, sizeof(etag), "\r\nETag: \"%d%m%Y%H%M%S", &tm);
-    if (0 == n || (int)sizeof(etag) - n <= snprintf(etag + n, sizeof(etag) - n, "%jd\"", (intmax_t)st.st_size))
+    if (0 == n || (int)sizeof(etag) - n <= snprintf(etag + n, sizeof(etag) - n, "%zu\"", st.st_size))
         return HTTP_FILE_SERVER_ERROR(500), close(ffd), -1;
     int include_payload;
     if (0 == strcmp(headers->if_none_match, etag + 8))
@@ -232,7 +232,7 @@ int http_file_server_run2(struct http_file_server *fs, struct http_headers *head
     gmtime_r(&orig_st.st_mtime, &tm);
     vmbuf_strftime(&ctx->header, "\r\nLast-Modified: %a, %d %b %Y %H:%M:%S GMT", &tm);
     if (include_payload)
-        vmbuf_sprintf(&ctx->header, "\r\nContent-Length: %jd", (intmax_t)st.st_size);
+        vmbuf_sprintf(&ctx->header, "\r\nContent-Length: %zd", st.st_size);
     vmbuf_strcpy(&ctx->header, "\r\n\r\n");
     int res = 0;
     if (include_payload && 0 > (res = http_server_sendfile_payload(ffd, st.st_size)))
