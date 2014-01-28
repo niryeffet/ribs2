@@ -27,7 +27,12 @@ _RIBS_INLINE_ int file_writer_attachfd(struct file_writer *fw, int fd, size_t in
     fw->mem = NULL;
     fw->base_loc = fw->write_loc = 0;
     fw->fd = fd;
-    fw->buffer_size = initial_size;
+
+    if (initial_size < 4096)
+        fw->buffer_size = 4096;
+    else
+        fw->buffer_size = next_p2(initial_size);
+
     if (0 > fw->fd)
         return perror("open, file_writer_attachfd"), -1;
 
