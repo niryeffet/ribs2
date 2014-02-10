@@ -139,3 +139,9 @@ int ringfile_free(struct ringfile *rb) {
     rb->mem = NULL;
     return 0;
 }
+
+int ringfile_sync(struct ringfile *rb) {
+    if (rb->mem && 0 > msync(rb->mem, RINGFILE_HEADER->reserved_size + RINGFILE_HEADER->capacity, MS_SYNC))
+        return LOGGER_PERROR("msync"), -1;
+    return 0;
+}
