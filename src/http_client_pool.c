@@ -185,15 +185,13 @@ int http_client_pool_init_ssl(struct http_client_pool *http_client_pool, size_t 
 #define _READ_MORE_DATA(cond, container, buf, th, fd, extra)            \
     SSL *ssl = ribs_ssl_get(fd);                                        \
     if (!ssl) {                                                         \
-               __READ_MORE_DATA(cond, container, buf, th, fd, extra)    \
-               }                                                        \
+        __READ_MORE_DATA(cond, container, buf, th, fd, extra)           \
+    }                                                                   \
     else {                                                              \
         extra;                                                          \
         while (cond) {                                                  \
             if (*res < 0) {                                             \
-                int err = SSL_get_error(ssl, *res);                     \
-                if (SSL_ERROR_WANT_READ == err ||                       \
-                    SSL_ERROR_WANT_WRITE == err)                        \
+                if (ribs_ssl_want_io(ssl, *res))                        \
                     http_client_yield(th, fd);                          \
                 else {                                                  \
                     LOGGER_PERROR("SSL_read %s:%hu %s",                 \
@@ -270,9 +268,7 @@ inline int http_client_write_request(struct http_client_context *cctx, struct ti
                 vmbuf_rseek(&cctx->request, res);
                 continue;
             }
-            int err = SSL_get_error(ssl, res);
-            if (res < 0 && (SSL_ERROR_WANT_WRITE == err ||
-                            SSL_ERROR_WANT_READ == err)) {
+            if (ribs_ssl_want_io(ssl, res)) {
                 http_client_yield(th, cctx->fd);
                 continue;
             }
@@ -408,15 +404,11 @@ void http_client_fiber_main(void) {
     SSL *ssl = ribs_ssl_get(fd);
     if (ssl && !ctx->ssl_connected) {
         for (;;http_client_yield(th, fd)) {
-            int ret = SSL_connect(ssl);
-            if (1 == ret)
+            int res = SSL_connect(ssl);
+            if (1 == res)
                 break;
-            int err = SSL_get_error(ssl, ret);
-            if (-1 == ret) {
-                if (SSL_ERROR_WANT_WRITE == err ||
-                    SSL_ERROR_WANT_READ == err)
-                    continue;
-            }
+            if (ribs_ssl_want_io(ssl, res))
+                continue;
             LOGGER_PERROR("SSL_connect %s:%hu %s",inet_ntoa(ctx->key.addr), ctx->key.port, ERR_reason_error_string(ERR_get_error()));
             CLIENT_ERROR();
         }
@@ -720,15 +712,11 @@ http_client_get_file(struct http_client_pool *http_client_pool, struct vmfile *i
     SSL *ssl = ribs_ssl_get(cfd);
     if (ssl && !cctx->ssl_connected) {
         for (;;http_client_yield(&cctx->pool->timeout_handler, cfd)) {
-            int ret = SSL_connect(ssl);
-            if (1 == ret)
+            int res = SSL_connect(ssl);
+            if (1 == res)
                 break;
-            int err = SSL_get_error(ssl, ret);
-            if (-1 == ret) {
-                if (SSL_ERROR_WANT_WRITE == err ||
-                    SSL_ERROR_WANT_READ == err)
-                    continue;
-            }
+            if (ribs_ssl_want_io(ssl, res))
+                continue;
             LOGGER_PERROR("SSL_connect %s:%hu %s",inet_ntoa(cctx->key.addr), cctx->key.port, ERR_reason_error_string(ERR_get_error()));
             return http_client_close_free(cctx), -1;
         }

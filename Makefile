@@ -22,3 +22,7 @@ clean_example_%:
 etags:
 	@echo "etags"
 	find . -regex ".*\.[cChH]\(pp\)?" -print | etags -
+
+test:   all
+	@echo "Running tests"
+	@./scripts/run_tests.sh

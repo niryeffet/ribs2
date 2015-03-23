@@ -31,6 +31,7 @@ void ribs_ssl_init(void);
 SSL *ribs_ssl_get(int fd);
 SSL *ribs_ssl_alloc(int fd, SSL_CTX *ssl_ctx);
 void ribs_ssl_free(int fd);
+int ribs_ssl_want_io(SSL *ssl, int res);
 int ribs_ssl_set_options(SSL_CTX *ssl_ctx, char *cipher_list);
 
 #endif

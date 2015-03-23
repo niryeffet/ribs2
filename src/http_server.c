@@ -146,11 +146,8 @@ static int _http_server_read_ssl(struct http_server_context *ctx) {
         if (res < wavail)
             return errno=0, 1;
     }
-    if (res < 0) {
-        int err = SSL_get_error(ssl, res);
-        return (SSL_ERROR_WANT_READ == err ||
-                SSL_ERROR_WANT_WRITE == err) ? 1 : -1;
-    }
+    if (res < 0)
+        return ribs_ssl_want_io(ssl, res) ? 1 : -1;
     return 0; // remote side closed connection
 }
 
@@ -165,9 +162,7 @@ static int _http_server_write_ssl(struct http_server_context *ctx) {
                 vmbuf_rseek(vmb, res);
                 continue;
             }
-            int err = SSL_get_error(ssl, res);
-            if (res < 0 && (SSL_ERROR_WANT_WRITE == err ||
-                            SSL_ERROR_WANT_READ == err)) {
+            if (ribs_ssl_want_io(ssl, res)) {
                 http_server_yield();
                 continue;
             }
@@ -200,10 +195,8 @@ static int _http_server_sendfile_ssl(struct http_server_context *ctx, int ffd, s
                     break;
             } else {
                 if (res < 0) {
-                    int err = SSL_get_error(ssl, res);
-                    if (SSL_ERROR_WANT_WRITE == err ||
-                        SSL_ERROR_WANT_READ == err)
-                        continue;
+                    if (ribs_ssl_want_io(ssl, res))
+                                       continue;
                 }
                 ctx->persistent = 0;
                 munmap(mem, 1024*1024);
@@ -605,9 +598,7 @@ void http_server_fiber_main(void) {
                 ribs_close(fd);
                 return;
             }
-            ret = SSL_get_error(ssl, ret);
-            if (SSL_ERROR_WANT_WRITE != ret &&
-                SSL_ERROR_WANT_READ != ret) {
+            if (!ribs_ssl_want_io(ssl, ret)) {
                 ribs_close(fd);
                 return;
             }

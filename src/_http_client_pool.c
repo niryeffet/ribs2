@@ -45,9 +45,7 @@ _RIBS_INLINE_ int http_client_send_request(struct http_client_context *cctx) {
             if (res > 0)
                 vmbuf_rseek(&cctx->request, res);
             else {
-                int err = SSL_get_error(ssl, res);
-                if (res < 0 && (SSL_ERROR_WANT_WRITE == err ||
-                                SSL_ERROR_WANT_READ == err))
+                if (ribs_ssl_want_io(ssl, res))
                     res = 0;
                 else {
                     LOGGER_PERROR("SSL_write %s:%hu %s", inet_ntoa(cctx->key.addr), cctx->key.port, ERR_reason_error_string(ERR_get_error()));

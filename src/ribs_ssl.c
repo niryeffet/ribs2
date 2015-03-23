@@ -56,6 +56,12 @@ void ribs_ssl_free(int fd) {
     SSL_free(ssl);
 }
 
+int ribs_ssl_want_io(SSL *ssl, int res) {
+    int err = SSL_get_error(ssl, res);
+    return (SSL_ERROR_WANT_WRITE == err ||
+            SSL_ERROR_WANT_READ == err);
+}
+
 int ribs_ssl_set_options(SSL_CTX *ssl_ctx, char *cipher_list) {
     /* bugs */
     SSL_CTX_set_options(ssl_ctx, SSL_OP_ALL); /* almost all bugs */
