@@ -33,7 +33,7 @@ ifeq ($(RIBS2_SSL),1)
 CPPFLAGS+=-DRIBS2_SSL
 endif
 
-LDFLAGS+=-L../lib
+LDFLAGS+=-L../lib -lstdc++
 CFLAGS+=$(OPTFLAGS) -ggdb3 -W -Wall -Werror
 GCCVER_GTE_4_7=$(shell expr `gcc -dumpversion` \>= 4.7)
 ifeq ($(GCCVER_GTE_4_7),1)
