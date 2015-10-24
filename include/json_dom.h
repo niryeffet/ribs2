@@ -59,7 +59,6 @@ int json_dom_get_double_val(struct json_dom_node *node, double *double_out);
 int json_dom_copy_str_val(struct json_dom_node *node, char **str_out);
 int json_dom_get_array_size(struct json_dom_node *node, int *size_out);
 int json_dom_build_index(struct json_dom *js, int max_level, struct hashtable *ht);
-inline int json_dom_parse_build_index(const char *str, int max_level,struct hashtable *ht);
 
 #define json_dom_int_from_child(node, name, val) json_dom_get_int_val(json_dom_find_child(node, name), val) 
 #define json_dom_dub_from_child(node, name, val) json_dom_get_double_val(json_dom_find_child(node, name), val)
@@ -71,6 +70,5 @@ inline int json_dom_parse_build_index(const char *str, int max_level,struct hash
    "result.code"
    "user[14].name"
 */
-inline struct json_dom_node *json_dom_index_find_path(struct hashtable *ht, const char *path);
 
 #endif // _JSON_DOM__H_

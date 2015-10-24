@@ -19,11 +19,11 @@
 */
 #include "json_dom.h"
 
-inline struct json_dom_node *_new_node(void) {
+static inline struct json_dom_node *_new_node(void) {
     return ribs_malloc(sizeof(struct json_dom_node));
 }
 
-inline struct json_dom_node *child_node(struct json_dom_node *parent, struct json_dom_node *node) {
+static inline struct json_dom_node *child_node(struct json_dom_node *parent, struct json_dom_node *node) {
     if (parent) {
         node->parent = parent;
         if (parent->last_child) {
@@ -239,7 +239,7 @@ struct json_dom_node *json_dom_find_child(struct json_dom_node *node, const char
     return NULL;
 }
 
-inline int json_dom_parse_build_index(const char *str, int max_level,struct hashtable *ht) {
+static inline int json_dom_parse_build_index(const char *str, int max_level,struct hashtable *ht) {
     struct json_dom *js = ribs_malloc(sizeof(struct json_dom));
     *ht = (struct hashtable)HASHTABLE_INITIALIZER;
     return
@@ -248,7 +248,7 @@ inline int json_dom_parse_build_index(const char *str, int max_level,struct hash
           0 <= json_dom_build_index(js, max_level, ht)) ? 0 : -1;
 }
 
-inline struct json_dom_node *json_dom_index_find_path(struct hashtable *ht, const char *path) {
+static inline struct json_dom_node *json_dom_index_find_path(struct hashtable *ht, const char *path) {
     struct json_dom_node** node_ptr = (struct json_dom_node**) hashtable_lookup_str(ht, path, NULL);
     return node_ptr != NULL ? *node_ptr : NULL;
 }

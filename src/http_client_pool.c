@@ -247,7 +247,7 @@ static inline void http_client_yield_ignore_epollout(struct timeout_handler* tim
     TIMEOUT_HANDLER_REMOVE_FD_DATA(fd_data);
 }
 
-inline int http_client_write_request(struct http_client_context *cctx, struct timeout_handler* th)
+static inline int http_client_write_request(struct http_client_context *cctx, struct timeout_handler* th)
 {
     int res;
 #ifdef RIBS2_SSL
@@ -280,7 +280,7 @@ inline int http_client_write_request(struct http_client_context *cctx, struct ti
     return 0;
 }
 
-inline int http_client_read_headers(struct http_client_context *cctx, int *code, uint32_t *eoh_ofs, int *res, char **data, struct timeout_handler *th)
+static inline int http_client_read_headers(struct http_client_context *cctx, int *code, uint32_t *eoh_ofs, int *res, char **data, struct timeout_handler *th)
 {
     char *eoh;
     READ_DATA_STR(NULL == (eoh = strstr(*data = vmbuf_data(&cctx->response), CRLFCRLF)),
@@ -305,7 +305,7 @@ inline int http_client_read_headers(struct http_client_context *cctx, int *code,
     return 0;
 }
 
-inline int http_client_read_body(struct http_client_context *cctx, int *code, struct vmfile *infile, uint32_t *eoh_ofs, int *res, char **data, struct timeout_handler *th)
+static inline int http_client_read_body(struct http_client_context *cctx, int *code, struct vmfile *infile, uint32_t *eoh_ofs, int *res, char **data, struct timeout_handler *th)
 {
     struct vmbuf *response = &cctx->response;
     do {
@@ -575,7 +575,7 @@ struct http_client_context *http_client_pool_post_request_init(struct http_clien
 }
 
 /* inline */
-inline struct http_client_context *_http_client_pool_create_client(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, struct ribs_context *rctx, void (*func)(void)) {
+static inline struct http_client_context *_http_client_pool_create_client(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, struct ribs_context *rctx, void (*func)(void)) {
     int cfd;
     struct http_client_key key = { .addr = addr, .port = port };
     uint32_t ofs = hashtable_lookup(&ht_persistent_clients, &key, sizeof(struct http_client_key));

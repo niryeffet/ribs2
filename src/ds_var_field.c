@@ -68,7 +68,7 @@ int ds_var_field_writer_init(struct ds_var_field_writer *dsvfw, const char *file
     return 0;
 }
 
-inline int _ds_var_field_writer_store_ofs(struct ds_var_field_writer *dsvfw) {
+static inline int _ds_var_field_writer_store_ofs(struct ds_var_field_writer *dsvfw) {
     size_t ofs = file_writer_wlocpos(&dsvfw->data);
     *(size_t *)vmbuf_wloc(&dsvfw->ofs_table) = ofs;
     return vmbuf_wseek(&dsvfw->ofs_table, sizeof(size_t));
