@@ -33,7 +33,9 @@
 void usage(char *progname) {
     dprintf(STDERR_FILENO,
             "Usage: %s [options]... <URL>\n"
+#ifdef RIBS2_SSL
             "\t-C, --cacert <FILE>\tRead Certificate Authorities certificates file, turns on certificate validation\n"
+#endif
             "\t-o, --outfile <FILE>\tOutput to file. Below options are ignored\n"
             "\t-h, --headers\t\tPrint headers too\n"
             "\t-H, -hh, --headers-only\tPrint headers only\n"
@@ -53,7 +55,9 @@ int main(int argc, char *argv[]) {
 
     static struct option long_options[] = {
         {"outfile", 1, 0, 'o'},
+#ifdef RIBS2_SSL
         {"cacert", 1, 0, 'C'},
+#endif
         {"headers", 0, 0, 'h'},
         {"nreqs", 1, 0, 'n'},
         {"silent", 0, 0, 's'},
@@ -68,7 +72,9 @@ int main(int argc, char *argv[]) {
     char silent = 0;
     int64_t nreqs = 0;
     char headers = 0;
+#ifdef RIBS2_SSL
     char *cacert = NULL;
+#endif
     char *save_to_file = NULL;
     char force_close = 0;
     char use_content = 0;
@@ -76,16 +82,22 @@ int main(int argc, char *argv[]) {
 
     for (;;) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "o:c:n:C:f:shHrp", long_options, &option_index);
+        int c = getopt_long(argc, argv, "o:c:n:f:shHrp"
+#ifdef RIBS2_SSL
+                            "C:"
+#endif
+                            , long_options, &option_index);
         if (c == -1)
             break;
         switch (c) {
         case 'o':
             save_to_file = optarg;
             break;
+#ifdef RIBS2_SSL
         case 'C':
             cacert = optarg;
             break;
+#endif
         case 'h':
             ++headers;
             break;
@@ -151,14 +163,16 @@ int main(int argc, char *argv[]) {
 
     if (!strncasecmp("http://", url, 7)) {
         url += 7;
-    } else if (!strncasecmp("https://", url, 8)) {
+    }
+#ifdef RIBS2_SSL
+    else if (!strncasecmp("https://", url, 8)) {
         if (http_client_pool_init_ssl(&client_pool, concurrency, 1, cacert))
             exit(EXIT_FAILURE);
         url += 8;
         port = 443;
     }
-
     if (80 == port)
+#endif
         if (http_client_pool_init(&client_pool, concurrency, 1))
             exit(EXIT_FAILURE);
 
