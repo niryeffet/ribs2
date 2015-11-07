@@ -5,4 +5,6 @@ ribified
 *~
 TAGS
 perf.data*
+index_gen.h
+index_container.h
 

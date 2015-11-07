@@ -40,7 +40,6 @@
 #define IDX_CONTAINER_O2M_EXIST(T,IC,KEY) TEMPLATE(index_container_o2m_exist, T)((IC), KEY)
 
 /* internal stuff */
-#define IDX_FW_INDEX(T) struct TEMPLATE(index_gen_fw_index, T)
 #define IDX_CONTAINER_O2O(T) struct TEMPLATE(index_container_o2o, T)
 #define IDX_CONTAINER_O2M(T) struct TEMPLATE(index_container_o2m, T)
 #define IDX_CONTAINER_O2O_INIT(T,X,F) TEMPLATE(index_container_o2o_init, T)((X), F)
@@ -64,55 +63,7 @@ struct index_header_o2m {
 #undef T
 #endif
 
-#define T int8_t
 #include "index_gen.h"
 #include "index_container.h"
-#undef T
-
-#define T uint8_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T int16_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T uint16_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T int32_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T uint32_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T int64_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T uint64_t
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T float
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
-#define T double
-#include "index_gen.h"
-#include "index_container.h"
-#undef T
-
 
 #endif // _IDX__H_

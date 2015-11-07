@@ -22,12 +22,16 @@ endif
 
 ribs2_libs_clean=$(ribs2_libs:%=%_clean)
 
-buildall : $(ribs2_libs)
+buildall : generate_code $(ribs2_libs)
 clean: $(ribs2_libs_clean)
 
-$(ribs2_libs):
+$(ribs2_libs): generate_code
 	@echo "~~~~~~~~[$@]~~~~~~~~"
 	@$(MAKE) -s -f "$@.mk"
+
+generate_code:
+	@echo "~~~~~~~~[Generating code]~~~~~~~~"
+	@$(MAKE) -C code_gen -s
 
 $(ribs2_libs_clean):
 	@echo "~~~~~~~~[$@]~~~~~~~~"
