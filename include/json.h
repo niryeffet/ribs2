@@ -19,7 +19,6 @@
 */
 #ifndef _JSON__H_
 #define _JSON__H_
-#include "ribs.h"
 #include "vmbuf.h"
 
 #include <stdint.h>

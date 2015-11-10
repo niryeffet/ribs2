@@ -18,6 +18,7 @@
     along with RIBS.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "json_dom.h"
+#include "malloc.h"
 
 static inline struct json_dom_node *_new_node(void) {
     return ribs_malloc(sizeof(struct json_dom_node));

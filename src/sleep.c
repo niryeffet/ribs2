@@ -17,7 +17,8 @@
     You should have received a copy of the GNU Lesser General Public License
     along with RIBS.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "ribs.h"
+#include "logger.h"
+#include "epoll_worker.h"
 #include <sys/timerfd.h>
 
 int ribs_sleep_init(void) {

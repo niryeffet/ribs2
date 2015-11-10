@@ -19,9 +19,8 @@
 */
 #ifndef _JSON_DOM__H_
 #define _JSON_DOM__H_
-#include "ribs.h"
 #include "vmbuf.h"
-
+#include "hashtable.h"
 #include <stdint.h>
 
 enum {

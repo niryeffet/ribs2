@@ -18,7 +18,8 @@
     along with RIBS.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "timer_worker.h"
-#include "ribs.h"
+#include "errno.h"
+#include "epoll_worker.h"
 #include <sys/timerfd.h>
 
 struct timer_worker_context {
