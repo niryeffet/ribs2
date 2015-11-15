@@ -94,7 +94,7 @@ void index_container_o2o_free(char *type) {
 }
 
 void struct_index_container_o2m(char *type) {
-    write_code(index_container_file, "struct index_container_o2m_%s {\n", type);
+    write_code(index_container_file, "\n\nstruct index_container_o2m_%s {\n", type);
     write_code(index_container_file, "    struct file_mapper fm;\n");
     write_code(index_container_file, "    struct index_header_o2m *header;\n");
     write_code(index_container_file, "    uint32_t *vect;\n");
