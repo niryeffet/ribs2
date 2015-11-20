@@ -158,6 +158,32 @@ void index_gen_generate_ds_file_o2m(char *type) {
     write_code(index_gen_file, "}");
 }
 
+void index_gen_generate_ds_file_o2o_ht(char *type) {
+    write_code(index_gen_file, "\n\nstatic inline int index_gen_generate_ds_file_o2o_ht_%s(const char *base_path, const char *db, const char *table, const char *field) {\n", type);
+    write_code(index_gen_file, "    char output_filename[PATH_MAX];\n");
+    write_code(index_gen_file, "    if (PATH_MAX <= snprintf(output_filename, PATH_MAX, \"%%s/%%s/%%s/%%s.idx\", base_path, db, table, field))\n");
+    write_code(index_gen_file, "        return LOGGER_ERROR(\"filename too long\"), -1;\n");
+    write_code(index_gen_file, "    DS_FIELD(%s) ds = DS_FIELD_INITIALIZER;\n", type);
+    write_code(index_gen_file, "    char filename[PATH_MAX];\n");
+    write_code(index_gen_file, "    // strlen(\"%%s/%%s/%%s/%%s\") < strlen(\"%%s/%%s/%%s/%%s.idx\"); not checking again\n");
+    write_code(index_gen_file, "    snprintf(filename, PATH_MAX, \"%%s/%%s/%%s/%%s\", base_path, db, table, field);\n");
+    write_code(index_gen_file, "    if (0 > DS_FIELD_INIT(%s, &ds, filename))\n", type);
+    write_code(index_gen_file, "        return LOGGER_ERROR(\"failed to init datastore\"), -1;\n");
+    write_code(index_gen_file, "\n");
+    write_code(index_gen_file, "    struct hashtable ht = HASHTABLE_INITIALIZER;\n");
+    write_code(index_gen_file, "    if (0 > hashtable_create(&ht, DS_FIELD_NUM_ELEMENTS(&ds), output_filename))\n");
+    write_code(index_gen_file, "        return LOGGER_ERROR(\"failed to init datastore\"), -1;\n");
+    write_code(index_gen_file, "    %s *rec_begin = DS_FIELD_BEGIN(&ds), *rec_end = DS_FIELD_END(&ds), *rec = rec_begin;\n", type);
+    write_code(index_gen_file, "    for (; rec != rec_end; ++rec) {\n");
+    write_code(index_gen_file, "        uint32_t row_loc = rec - rec_begin;\n");
+    write_code(index_gen_file, "        if (0 == hashtable_insert(&ht, rec, sizeof(*rec), &row_loc, sizeof(row_loc)))\n");
+    write_code(index_gen_file, "            return LOGGER_ERROR(\"hashtable_insert\"), -1;\n");
+    write_code(index_gen_file, "    }\n");
+    write_code(index_gen_file, "    DS_FIELD_FREE(%s, &ds);\n", type);
+    write_code(index_gen_file, "    hashtable_close(&ht);\n");
+    write_code(index_gen_file, "    return 0;\n");
+    write_code(index_gen_file, "}");
+}
 void ds_code_gen_index_gen(const char *filename) {
     if (!(index_gen_file = fopen(filename, "w")))
         die_perror("fopen");
@@ -175,6 +201,7 @@ void ds_code_gen_index_gen(const char *filename) {
         _index_gen_generate_ds_file(ds_types[i]);
         index_gen_generate_ds_file_o2o(ds_types[i]);
         index_gen_generate_ds_file_o2m(ds_types[i]);
+        index_gen_generate_ds_file_o2o_ht(ds_types[i]);
     }
 
     if (0 != fclose(index_gen_file))
