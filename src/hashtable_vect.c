@@ -30,6 +30,7 @@ int hashtable_vect_init(struct hashtable_vect *ht, uint32_t initial_size, size_t
             || 0 > vmbuf_init(&ht->vect, val_size * initial_size))
         return LOGGER_ERROR("vmbuf_init"), -1;
     vmbuf_alloczero(&ht->buckets, initial_size * sizeof(struct hashtable_vect_internal_entry));
+    vmbuf_alloc(&ht->entry_buf, sizeof(struct hashtable_vect_entry)); //First offset is reserved to indicate unused entry
     ht->val_size = val_size;
     ht->mask = initial_size - 1;
     ht->size = 0;
