@@ -20,7 +20,7 @@
 #ifndef _DS_TYPES__H_
 #define _DS_TYPES__H_
 
-enum {
+typedef enum {
     ds_type_int8_t,
     ds_type_uint8_t,
     ds_type_int16_t,
@@ -32,6 +32,6 @@ enum {
     ds_type_float,
     ds_type_double,
     ds_type_var,
-};
+} ds_type_t;
 
 #endif // _DS_TYPES__H_
