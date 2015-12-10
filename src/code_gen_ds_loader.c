@@ -19,7 +19,7 @@
 */
 #include <limits.h>
 #include <string.h>
-#include "ds_loader_code_gen.h"
+#include "code_gen_ds_loader.h"
 #include "logger.h"
 
 #define WRITE_CODE(FILE, ...) \
@@ -67,6 +67,8 @@ char *ds_loader_type_to_str(ds_type_t type) {
 int ds_loader_init(struct ds_loader_code_gen *loader, const char *db_name) {
     if (loader->file_c)
         return 0;
+
+    char *typename = getenv("RIBS_DS_NAME");
 
     loader->table_name = NULL;
     char filename[PATH_MAX];
