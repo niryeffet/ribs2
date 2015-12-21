@@ -64,7 +64,7 @@ char *ds_loader_type_to_str(ds_type_t type) {
     return NULL;
 }
 
-int ds_loader_init(struct ds_loader_code_gen *loader, const char *db_name) {
+int ds_loader_init(struct ds_loader_code_gen *loader) {
     if (loader->file_c)
         return 0;
 
@@ -83,7 +83,6 @@ int ds_loader_init(struct ds_loader_code_gen *loader, const char *db_name) {
     if (0 > vmbuf_init(&loader->file_list_buf, 0))
         return LOGGER_ERROR("vmbuf_init"), ds_loader_close(loader), -1;
     loader->typename = strdup(typename);
-    loader->db_name = strdup(db_name);
 
     WRITE_CODE(loader->file_h, "#ifndef _%s__H_\n", loader->typename);
     WRITE_CODE(loader->file_h, "#define _%s__H_\n", loader->typename);
@@ -135,6 +134,12 @@ int ds_loader_close(struct ds_loader_code_gen *loader) {
         free(loader->table_name);
     vmbuf_free(&loader->file_list_buf);
     return 0;
+}
+
+void ds_loader_db(struct ds_loader_code_gen *loader, const char *db_name) {
+    if (loader->db_name)
+        free(loader->db_name);
+    loader->db_name = strdup(db_name);
 }
 
 void ds_loader_table(struct ds_loader_code_gen *loader, const char *table_name) {

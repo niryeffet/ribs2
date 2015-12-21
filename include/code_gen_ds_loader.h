@@ -35,8 +35,9 @@ struct ds_loader_code_gen {
 
 #define DS_LOADER_CODE_GEN_INITIALIZER {NULL, NULL, NULL, NULL, NULL, VMBUF_INITIALIZER};
 
-int ds_loader_init(struct ds_loader_code_gen *loader , const char *db_name);
+int ds_loader_init(struct ds_loader_code_gen *loader);
 int ds_loader_close(struct ds_loader_code_gen *loader);
+void ds_loader_db(struct ds_loader_code_gen *loader, const char *db_name);
 void ds_loader_table(struct ds_loader_code_gen *loader, const char *table_name);
 int ds_loader_field(struct ds_loader_code_gen *loader, const char *name, ds_type_t type);
 int ds_loader_idx_o2o(struct ds_loader_code_gen *loader, const char *name, ds_type_t type);
