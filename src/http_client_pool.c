@@ -296,7 +296,7 @@ static inline int http_client_read_headers(struct http_client_context *cctx, int
     }
     SSTRL(HTTP, "HTTP/");
     if (0 != SSTRNCMP(HTTP, *data))
-            return -1;
+        return -1;
 
     p = strchrnul(*data, ' ');
     *code = (*p ? atoi(p + 1) : 0);
@@ -505,30 +505,12 @@ void http_client_fiber_main_wrapper(void) {
     last_ctx = (struct http_client_context *)current_ctx->reserved;
 }
 
-int http_client_pool_get_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *format, ...) {
+struct http_client_context *http_client_pool_get_requestv(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, va_list ap) {
     struct http_client_context *cctx = http_client_pool_create_client2(http_client_pool, addr, port, hostname, NULL);
     if (NULL == cctx)
-        return -1;
+        return NULL;
     vmbuf_strcpy(&cctx->request, "GET ");
-    va_list ap;
-    va_start(ap, format);
     vmbuf_vsprintf(&cctx->request, format, ap);
-    va_end(ap);
-    vmbuf_sprintf(&cctx->request, " HTTP/1.1\r\nHost: %s\r\n\r\n", hostname);
-    if (0 > http_client_send_request(cctx))
-        return http_client_free(cctx), -1;
-    return 0;
-}
-
-int http_client_pool_get_request2(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...) {
-    struct http_client_context *cctx = http_client_pool_create_client2(http_client_pool, addr, port, hostname, NULL);
-    if (NULL == cctx)
-        return -1;
-    vmbuf_strcpy(&cctx->request, "GET ");
-    va_list ap;
-    va_start(ap, format);
-    vmbuf_vsprintf(&cctx->request, format, ap);
-    va_end(ap);
     vmbuf_sprintf(&cctx->request, " HTTP/1.1\r\nHost: %s", hostname);
     if (headers) {
         for (; NULL != *headers; ++headers) {
@@ -538,8 +520,37 @@ int http_client_pool_get_request2(struct http_client_pool *http_client_pool, str
     }
     vmbuf_strcpy(&cctx->request, "\r\n\r\n");
     if (0 > http_client_send_request(cctx))
-        return http_client_free(cctx), -1;
-    return 0;
+        return http_client_free(cctx), NULL;
+    return cctx;
+}
+
+int http_client_pool_get_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    struct http_client_context *cctx = http_client_pool_get_requestv(http_client_pool, addr, port, hostname, NULL, format, ap);
+    va_end(ap);
+    return NULL == cctx ? -1 : 0;
+}
+
+int http_client_pool_get_request2(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    struct http_client_context *cctx = http_client_pool_get_requestv(http_client_pool, addr, port, hostname, headers, format, ap);
+    va_end(ap);
+    return NULL == cctx ? -1 : 0;
+}
+
+struct http_client_context *http_client_pool_get_request3(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    struct http_client_context *cctx = http_client_pool_get_requestv(http_client_pool, addr, port, hostname, headers, format, ap);
+    va_end(ap);
+    if (NULL == cctx)
+        return NULL;
+
+    yield();
+    http_client_free(cctx);
+    return cctx;
 }
 
 int http_client_pool_post_request(struct http_client_pool *http_client_pool,

@@ -73,6 +73,7 @@ struct http_client_context *http_client_pool_create_client2(struct http_client_p
 int http_client_pool_get_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *format, ...) __attribute__ ((format (gnu_printf, 5, 6)));
 int http_client_pool_get_request2(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...) __attribute__ ((format (gnu_printf, 6, 7)));
 int http_client_pool_post_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *data, size_t size_of_data, const char *format, ...) __attribute__ ((format (gnu_printf, 7, 8)));
+struct http_client_context *http_client_pool_get_request3(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...);
 struct http_client_context *http_client_pool_post_request_init(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *format, ...) __attribute__ ((format (gnu_printf, 5, 6)));
 int http_client_pool_post_request_send(struct http_client_context *context, struct vmbuf *post_data);
 int http_client_get_file(struct http_client_pool *http_client_pool, struct vmfile *infile, struct in_addr addr, uint16_t port, const char *hostname, int compression, int * file_compressed, const char *format, ...) __attribute__ ((format (gnu_printf, 8, 9)));
