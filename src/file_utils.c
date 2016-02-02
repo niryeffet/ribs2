@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <limits.h>
+#include <dirent.h>
 
 int _mkdir_recursive(char *file) {
     char *cur = file;
@@ -66,6 +67,68 @@ int mkdir_recursive(const char *dirname) {
     char file[strlen(dirname) + 1];
     strcpy(file, dirname);
     return _mkdir_recursive(file);
+}
+
+int rmdir_recursive(const char *path) {
+    DIR *d = opendir(path);
+
+    if (!d) {
+        if (errno == ENOENT)
+            return 0;
+        return LOGGER_PERROR_FUNC("opendir"), -1;
+    }
+
+    char buf[PATH_MAX];
+    int path_len = snprintf(buf, PATH_MAX, "%s", path);
+    if (path_len >= PATH_MAX - 1)
+        return LOGGER_ERROR("Filename too long: %s", path), -1;
+    if (buf[path_len - 1] != '/')
+        buf[path_len++] = '/';
+
+    char *filename_begin = buf + path_len;
+    int buf_remaining = PATH_MAX - path_len;
+
+    struct dirent *p;
+    int r = 0;
+    errno = 0;
+    while (NULL != (p = readdir(d))) {
+        if (!strcmp(p->d_name, ".") || !strcmp(p->d_name, ".."))
+            continue;
+
+        if (buf_remaining <= snprintf(filename_begin, buf_remaining, "%s", p->d_name))
+            return LOGGER_ERROR("Filename too long: %s", p->d_name), -1;
+
+        struct stat statbuf;
+        if (0 > (r = stat(buf, &statbuf))) {
+            LOGGER_PERROR_FUNC("stat: %s", buf);
+            goto done;
+        }
+
+        if (S_ISDIR(statbuf.st_mode)) {
+            if (0 > (r = rmdir_recursive(buf)))
+                goto done;
+        } else if (0 > (r = unlink(buf))) {
+            LOGGER_PERROR_FUNC("unlink: %s", buf);
+            goto done;
+        }
+    }
+
+    if (errno) {
+        LOGGER_PERROR_FUNC("readdir");
+        r = -1;
+    }
+
+done:
+    if (0 > closedir(d))
+        return LOGGER_PERROR_FUNC("closedir"), -1;
+
+    if (0 > r)
+        return -1;
+
+    if (0 > rmdir(path))
+        return LOGGER_PERROR_FUNC("rmdir"), -1;
+
+    return 0;
 }
 
 int ribs_create_temp_file2(const char *dir_path, const char *prefix, char *file_path, size_t file_path_sz) {
