@@ -25,6 +25,10 @@ static inline size_t vmallocator_wlocpos(struct vmallocator *v) {
     return v->wlocpos;
 }
 
+static inline void vmallocator_wlocset(struct vmallocator *v, size_t ofs) {
+    v->wlocpos = ofs;
+}
+
 static inline size_t vmallocator_avail(struct vmallocator *v) {
     return v->capacity - v->wlocpos;
 }
