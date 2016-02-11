@@ -22,7 +22,7 @@
 #define _HASHTABLE_VECT__H_
 
 #include <stdint.h>
-#include "vmbuf.h"
+#include "vmallocator.h"
 
 /*
  * hashtable_vect is useful for applications that, after inserting values into a hashtable,
@@ -31,13 +31,16 @@
  * the values themselves. This main buffer is where the holes are. A side effect of this is that
  * deleting from a hashtable_vect is very expensive. Hence it is unimplemented.
  */
-struct hashtable_vect {
-    struct vmbuf entry_buf;
-    struct vmbuf buckets;
-    struct vmbuf vect;
+struct hashtable_vect_header {
     uint32_t mask;
     uint32_t size;
     size_t val_size;
+};
+
+struct hashtable_vect {
+    struct vmallocator entry_buf;
+    struct vmallocator buckets;
+    struct vmallocator vect;
 };
 
 struct hashtable_vect_internal_entry {
@@ -52,11 +55,13 @@ struct hashtable_vect_entry {
 };
 
 
-#define HASHTABLE_VECT_INITIALIZER {VMBUF_INITIALIZER, VMBUF_INITIALIZER, VMBUF_INITIALIZER, 0, 0, 0}
+#define HASHTABLE_VECT_INITIALIZER {VMALLOCATOR_INITIALIZER, VMALLOCATOR_INITIALIZER, VMALLOCATOR_INITIALIZER}
 #define HASHTABLE_VECT_MAKE(x) (x) = (struct hashtable_vect)HASHTABLE_VECT_INITIALIZER
 
 int hashtable_vect_init(struct hashtable_vect *ht, uint32_t n, size_t val_size);
+int hashtable_vect_open(struct hashtable_vect *ht, uint32_t initial_size, size_t val_size, const char *dirname, int flags);
 int hashtable_vect_free(struct hashtable_vect *ht);
+int hashtable_vect_close(struct hashtable_vect *ht);
 static inline void *hashtable_vect_begin(struct hashtable_vect *ht);
 static inline void *hashtable_vect_end(struct hashtable_vect *ht);
 static inline uint32_t hashtable_vect_size(struct hashtable_vect *ht);
