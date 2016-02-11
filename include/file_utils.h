@@ -24,6 +24,7 @@
 
 int mkdir_recursive(const char *dirname);
 int mkdir_for_file_recursive(const char *filename);
+int rmdir_recursive(const char *path);
 int ribs_create_temp_file(const char *prefix);
 int ribs_create_temp_file2(const char *dir_path, const char *prefix, char *file_path, size_t file_path_sz);
 
