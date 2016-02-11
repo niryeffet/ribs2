@@ -67,6 +67,32 @@ int file_mapper_init2(struct file_mapper *fm, const char *filename, size_t size,
     return 0;
 }
 
+/*
+ * If you want to ensure that your buffer is null terminated, this maps an extra anonymous page after the file
+ */
+int file_mapper_init_null_terminated(struct file_mapper *fm, const char *filename) {
+    if (0 > file_mapper_free(fm))
+        return -1;
+    int fd = open(filename, O_RDONLY | O_CLOEXEC);
+    if (0 > fd)
+        return LOGGER_PERROR_FUNC("open: %s", filename), -1;
+    struct stat st;
+    if (0 > fstat(fd, &st))
+        return LOGGER_PERROR_FUNC("fstat: %d", fd), -1;
+    fm->size = RIBS_VM_ALIGN(st.st_size);
+    //If the file's size isn't a multiple of the page size, mmap will add 0s at the end automatically
+    uint8_t extra_page = 0;
+    if (fm->size == (size_t)st.st_size) {
+        fm->size += RIBS_VM_PAGESIZE;
+        extra_page = 1;
+    }
+    if (MAP_FAILED == (fm->mem = (char *)mmap(NULL, fm->size, PROT_READ, MAP_SHARED, fd, 0)))
+        return LOGGER_PERROR_FUNC("mmap %d", fd), fm->mem = NULL, -1;
+    if (extra_page && MAP_FAILED == mmap(fm->mem + fm->size - RIBS_VM_PAGESIZE, RIBS_VM_PAGESIZE, PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0))
+        return LOGGER_PERROR_FUNC("mmap %d", fd), fm->mem = NULL, -1;
+    return 0;
+}
+
 int file_mapper_init_rw(struct file_mapper *fm, const char *filename, size_t size) {
     return file_mapper_init2(fm, filename, size, O_RDWR | O_CREAT | O_CLOEXEC, PROT_READ | PROT_WRITE, MAP_SHARED);
 }
