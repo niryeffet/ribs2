@@ -29,11 +29,13 @@
 
 /* public interface */
 /* one to one index */
+#define INDEX_CONTAINER_O2O_INITIALIZER {FILE_MAPPER_INITIALIZER, NULL, NULL}
 #define IDX_GEN_DS_FILE_O2O(T, BASE, DB, TBL, FIELD) TEMPLATE(index_gen_generate_ds_file_o2o, T)(BASE, DB, TBL, FIELD)
 #define IDX_CONTAINER_O2O(T) struct TEMPLATE(index_container_o2o, T)
 #define IDX_CONTAINER_O2O_LOOKUP(T,IC,KEY,RES) TEMPLATE(index_container_o2o_lookup, T)((IC), KEY, RES)
 #define IDX_CONTAINER_O2O_EXIST(T,IC,KEY) TEMPLATE(index_container_o2o_exist, T)((IC), KEY)
 /* one to many index */
+#define INDEX_CONTAINER_O2M_INITIALIZER {FILE_MAPPER_INITIALIZER, NULL, NULL, NULL}
 #define IDX_GEN_DS_FILE_O2M(T, BASE, DB, TBL, FIELD) TEMPLATE(index_gen_generate_ds_file_o2m, T)(BASE, DB, TBL, FIELD)
 #define IDX_CONTAINER_O2M(T) struct TEMPLATE(index_container_o2m, T)
 #define IDX_CONTAINER_O2M_LOOKUP(T,IC,KEY,VECT,SIZE) TEMPLATE(index_container_o2m_lookup, T)((IC), KEY, VECT, SIZE)

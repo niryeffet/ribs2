@@ -20,7 +20,8 @@
 #ifndef _SENDMAIL__H_
 #define _SENDMAIL__H_
 
-#include "ribs.h"
+#include "vmbuf.h"
+#include "sstr.h"
 #include "timeout_handler.h"
 #include <netinet/in.h>
 
