@@ -64,6 +64,10 @@ char *ds_loader_type_to_str(ds_type_t type) {
     return NULL;
 }
 
+static void write_generated_file_comment(FILE *file, const char *typename) {
+    write_code(file, "/* THIS IS A GENERATED FILE. SOURCE CAN BE FOUND AT %s_ds.c */\n\n", typename + sizeof("ds_loader_") - 1);
+}
+
 int ds_loader_init(struct ds_loader_code_gen *loader) {
     if (loader->file_c)
         return 0;
@@ -84,6 +88,7 @@ int ds_loader_init(struct ds_loader_code_gen *loader) {
         return LOGGER_ERROR("vmbuf_init"), ds_loader_close(loader), -1;
     loader->typename = strdup(typename);
 
+    write_generated_file_comment(loader->file_h, typename);
     WRITE_CODE(loader->file_h, "#ifndef _%s__H_\n", loader->typename);
     WRITE_CODE(loader->file_h, "#define _%s__H_\n", loader->typename);
     WRITE_CODE(loader->file_h, "\n");
@@ -92,6 +97,7 @@ int ds_loader_init(struct ds_loader_code_gen *loader) {
     WRITE_CODE(loader->file_h, "\n");
     WRITE_CODE(loader->file_h, "typedef struct %s {\n", loader->typename);
 
+    write_generated_file_comment(loader->file_c, typename);
     WRITE_CODE(loader->file_c, "#include \"%s.h\"\n", loader->typename);
     WRITE_CODE(loader->file_c, "#include \"vmbuf.h\"\n");
     WRITE_CODE(loader->file_c, "\n");
