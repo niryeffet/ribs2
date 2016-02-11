@@ -14,8 +14,7 @@ static inline struct hashtable_vect_internal_entry *hashtable_vect_bucket(struct
 static inline void hashtable_vect_move_buckets_range(struct hashtable_vect *ht, uint32_t new_mask, uint32_t begin, uint32_t end) {
     for (; begin < end; ++begin) {
         struct hashtable_vect_internal_entry *ie = hashtable_vect_bucket(ht, begin);
-        struct hashtable_vect_entry *e = (struct hashtable_vect_entry *)vmbuf_data_ofs(&ht->entry_buf, ie->entry_ofs);
-        uint32_t new_bkt_idx = hashcode(e->key_data, e->key_len) & new_mask;
+        uint32_t new_bkt_idx = ie->hashcode & new_mask;
         /* if already in the right place skip it */
         if (begin == new_bkt_idx)
             continue;
