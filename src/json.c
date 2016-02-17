@@ -183,6 +183,11 @@ inline int json_parse(struct json *js, char *str)
         }
         ++js->cur;
     }
+
+    if (js->level) {
+        js->err = "unbalanced parenthesis";
+        return -1;
+    }
     return 0;
 }
 
