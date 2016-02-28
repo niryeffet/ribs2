@@ -60,6 +60,7 @@ int  json_parse_string(struct json *js);
 int  json_parse_primitive(struct json *js);
 void json_unescape_str(char *buf);
 size_t json_escape_str(char *d, const char *s);
+size_t json_nescape_str_vmb(struct vmbuf *buf, const char *s, uint32_t len);
 size_t json_escape_str_vmb(struct vmbuf *buf, const char *s);
 
 /* Copies the chars from *kb to *ke into *keyOut. Null terminates strOut.
