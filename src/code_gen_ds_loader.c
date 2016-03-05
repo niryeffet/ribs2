@@ -188,7 +188,23 @@ int ds_loader_field(struct ds_loader_code_gen *loader, const char *name, ds_type
     return 0;
 }
 
+int ds_loader_var_idx_o2o(struct ds_loader_code_gen *loader, const char *name) {
+    WRITE_CODE(loader->file_h, "    struct var_index_container_o2o "DS_LOADER_FIELD_NAME"_idx;\n", DS_LOADER_FIELD_PARAMS);
+
+    WRITE_CODE(loader->file_c, "    vmbuf_reset(&vmb);\n");
+    WRITE_CODE(loader->file_c, "    vmbuf_sprintf(&vmb, \"%%s/"DS_LOADER_FIELD_PATH"\", base_dir);\n", DS_LOADER_FIELD_PARAMS);
+    WRITE_CODE(loader->file_c, "    if (0 > (res = var_index_container_o2o_init(&ds_loader->"DS_LOADER_FIELD_NAME"_idx, vmbuf_data(&vmb))))\n", DS_LOADER_FIELD_PARAMS);
+    WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
+    WRITE_CODE(loader->file_c, "\n");
+
+    vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".idx\",\n", DS_LOADER_FIELD_PARAMS);
+    return 0;
+}
+
 int ds_loader_idx_o2o(struct ds_loader_code_gen *loader, const char *name, ds_type_t type) {
+    if (ds_type_var == type)
+        return ds_loader_var_idx_o2o(loader, name);
+
     char *type_str = ds_loader_type_to_str(type);
     WRITE_CODE(loader->file_h, "    struct index_container_o2o_%s "DS_LOADER_FIELD_NAME"_idx;\n", type_str, DS_LOADER_FIELD_PARAMS);
 
