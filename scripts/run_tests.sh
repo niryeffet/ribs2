@@ -1,5 +1,10 @@
 #!/bin/bash
 
+self="$0"
+scriptdir=$(cd `dirname $self`; pwd)
+cd $scriptdir/..
+
+
 function die()
 {
     echo "$*" >&2
@@ -67,6 +72,7 @@ function test_https()
     run_tests https
     rm -f httpd.pem httpd.key
 }
+make || die "make"
 ./tests/bin/test_ribs2 || die "unit tests"
 
 ulimit -Ss 4096
