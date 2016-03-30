@@ -30,6 +30,7 @@
 #include "hashtable.h"
 #include "sstr.h"
 #include "list.h"
+#include "hash_funcs.h"
 
 #define CLIENT_STACK_SIZE 65536
 
@@ -143,10 +144,10 @@ int http_client_pool_init_ssl(struct http_client_pool *http_client_pool, size_t 
 
     if (cacert) {
         if (!SSL_CTX_load_verify_locations(http_client_pool->ssl_ctx, cacert, NULL))
-            return LOGGER_ERROR("Unable to read Certificate Authority certificates file"), -1;
+            return LOGGER_ERROR("Unable to read CA certificates file"), -1;
         http_client_pool->check_cert = 1;
-    } else
-        http_client_pool->check_cert = 0;
+    } else if (http_client_pool->check_cert && !SSL_CTX_set_default_verify_paths(http_client_pool->ssl_ctx))
+        return LOGGER_ERROR("Unable to read default CA certificates file"), -1;
 
     SSL_CTX_set_verify(http_client_pool->ssl_ctx, cacert ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, NULL);
 
@@ -414,9 +415,6 @@ void http_client_fiber_main(void) {
         }
         ctx->ssl_connected = 1;
 
-        /* TODO: hostname verification might break in case of SNI and persistent connection
-           proposed solution: The key for persistent should include the hostname as well */
-
         if (ctx->pool->check_cert && ctx->hostname) {
             const X509 *server_cert = SSL_get_peer_certificate(ssl);
             if (!server_cert) {
@@ -447,7 +445,7 @@ void http_client_fiber_main(void) {
                             break;
                         }
                     }
-		}
+                }
                 sk_GENERAL_NAME_pop_free(san_names, GENERAL_NAME_free);
             }
             if (!matched) {
@@ -588,7 +586,12 @@ struct http_client_context *http_client_pool_post_request_init(struct http_clien
 /* inline */
 static inline struct http_client_context *_http_client_pool_create_client(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, struct ribs_context *rctx, void (*func)(void)) {
     int cfd;
-    struct http_client_key key = { .addr = addr, .port = port };
+    /*
+     * client key includes hostname hash to correctly handle SNI hostname verification
+     * https://en.wikipedia.org/wiki/Server_Name_Indication
+     */
+    uint32_t hostname_hash = hostname ? hashcode(hostname, strlen(hostname)) : 0;
+    struct http_client_key key = { .addr = addr, .port = port, .hostname_hash = hostname_hash };
     uint32_t ofs = hashtable_lookup(&ht_persistent_clients, &key, sizeof(struct http_client_key));
     struct list *head;
     struct ribs_context *new_ctx;
@@ -660,6 +663,7 @@ static inline struct http_client_context *_http_client_pool_create_client(struct
     cctx->pool = http_client_pool;
     cctx->key.addr = addr;
     cctx->key.port = port;
+    cctx->key.hostname_hash = hostname_hash;
     vmbuf_init(&cctx->request, 4096);
     vmbuf_init(&cctx->response, 4096);
     cctx->content = NULL;

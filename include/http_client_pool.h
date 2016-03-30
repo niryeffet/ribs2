@@ -59,6 +59,7 @@ struct http_client_context {
     struct http_client_key {
         struct in_addr addr;
         uint16_t port;
+        uint32_t hostname_hash;
     } key;
 #pragma pack(pop)
 };
