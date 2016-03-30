@@ -305,3 +305,7 @@ static inline char *vmbuf_wloc(struct vmbuf *vmbuf) {
 static inline char *vmbuf_rloc(struct vmbuf *vmbuf) {
     return (char *)vmbuf_rloc2(vmbuf);
 }
+
+static inline void vmbuf_nul(struct vmbuf *vmbuf) {
+    *vmbuf_wloc(vmbuf) = 0;
+}
