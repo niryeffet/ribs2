@@ -21,11 +21,14 @@
 #include "malloc.h"
 
 static inline struct json_dom_node *_new_node(void) {
-    return ribs_malloc(sizeof(struct json_dom_node));
+    struct json_dom_node *node = ribs_malloc(sizeof(struct json_dom_node));
+    node->children_count = 0;
+    return node;
 }
 
 static inline struct json_dom_node *child_node(struct json_dom_node *parent, struct json_dom_node *node) {
     if (parent) {
+        ++parent->children_count;
         node->parent = parent;
         if (parent->last_child) {
             node->prev_sibling = parent->last_child;
@@ -95,7 +98,7 @@ static int _parse_primitive(struct json_dom *js) {
 int json_dom_parse(struct json_dom *js, const char *str) {
     struct json_dom_node *root, *node;
     js->node = root = _new_node();
-    *root = (struct json_dom_node){"", 4, JSON_DOM_TYPE_OBJ, NULL, NULL, NULL, NULL, NULL};
+    *root = (struct json_dom_node){"", 4, JSON_DOM_TYPE_OBJ, 0, NULL, NULL, NULL, NULL, NULL};
     js->level = 0;
     js->cur = str;
     js->err = NULL;
@@ -192,6 +195,10 @@ static int _build_index(struct vmbuf *path_buf, struct json_dom_node *node, int 
     int i = 0;
     size_t marker = vmbuf_wlocpos(path_buf);
     for (; node; ++i, node = node->next_sibling) {
+        /* skip values */
+        if (node->parent->type == JSON_DOM_TYPE_STR && node->type >= JSON_DOM_TYPE_STR && node->type <= JSON_DOM_TYPE_PRIM)
+            continue;
+
         vmbuf_wlocset(path_buf, marker);
 
         if (node->parent->type == JSON_DOM_TYPE_ARRAY) {
@@ -249,7 +256,7 @@ static inline int json_dom_parse_build_index(const char *str, int max_level,stru
           0 <= json_dom_build_index(js, max_level, ht)) ? 0 : -1;
 }
 
-static inline struct json_dom_node *json_dom_index_find_path(struct hashtable *ht, const char *path) {
+struct json_dom_node *json_dom_index_find_path(struct hashtable *ht, const char *path) {
     struct json_dom_node** node_ptr = (struct json_dom_node**) hashtable_lookup_str(ht, path, NULL);
     return node_ptr != NULL ? *node_ptr : NULL;
 }
