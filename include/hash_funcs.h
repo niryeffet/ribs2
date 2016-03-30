@@ -30,6 +30,15 @@ static inline uint32_t hashcode2(const void *key, size_t n) {
     return h;
 }
 
+static inline uint64_t hashcode_djb_64(const void *key, size_t n) {
+    register const unsigned char *p = (const unsigned char *)key;
+    register const unsigned char *end = p + n;
+    uint64_t h = 5381;
+    for (; p != end; ++p)
+        h = ((h << 5) + h) + *p;
+    return h;
+}
+
 static inline uint32_t hashcode(const void *key, size_t n)
 {
     register const unsigned char *p = (const unsigned char *)key;
