@@ -34,13 +34,12 @@ static inline size_t vmallocator_avail(struct vmallocator *v) {
 }
 
 static inline int vmallocator_check_resize(struct vmallocator *v, size_t s) {
-    if (vmallocator_avail(v) < s) {
+    size_t wavail = vmallocator_avail(v);
+    if (wavail < s) {
         size_t new_capacity = v->capacity;
         if (0 == new_capacity)
             return -1;
-        do {
-            new_capacity <<= 1;
-        } while (new_capacity - v->wlocpos < s);
+        new_capacity = next_p2_64(new_capacity + s - wavail);
         return v->resize_func(v, new_capacity);
     }
     return 0;
@@ -84,5 +83,9 @@ static inline void *vmallocator_allocptr_aligned(struct vmallocator *v, size_t s
 }
 
 static inline void *vmallocator_ofs2mem(struct vmallocator *v, size_t ofs) {
-    return (char *)v->mem + ofs;
+    return v->mem + ofs;
+}
+
+static inline void *vmallocator_mem(struct vmallocator *v) {
+    return v->mem;
 }

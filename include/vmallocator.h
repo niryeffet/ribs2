@@ -21,6 +21,7 @@
 #define _VMALLOCATOR__H_
 
 #include "ribs_defs.h"
+#include "ilog2.h"
 #include <string.h>
 
 #define VM_ALLOC_MIN_SIZE 4096
@@ -55,6 +56,7 @@ static inline size_t vmallocator_alloc_aligned(struct vmallocator *v, size_t s);
 static inline void *vmallocator_allocptr(struct vmallocator *v, size_t s);
 static inline void *vmallocator_allocptr_aligned(struct vmallocator *v, size_t s);
 static inline void *vmallocator_ofs2mem(struct vmallocator *v, size_t ofs);
+static inline void *vmallocator_mem(struct vmallocator *v);
 
 #include "../src/_vmallocator.c"
 
