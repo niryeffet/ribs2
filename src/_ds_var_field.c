@@ -28,3 +28,7 @@ _RIBS_INLINE_ int ds_var_field_get(struct ds_var_field *dsvf, size_t index, char
 _RIBS_INLINE_ const char *ds_var_field_get_cstr(struct ds_var_field *dsvf, size_t index) {
     return file_mapper_data(&dsvf->data) + dsvf->ofs_table[index];
 }
+
+_RIBS_INLINE_ size_t ds_var_field_num_elements(struct ds_var_field *dsvf) {
+    return dsvf->num_elements;
+}

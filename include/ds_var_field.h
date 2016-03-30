@@ -45,6 +45,7 @@ int ds_var_field_init(struct ds_var_field *dsvf, const char *filename);
 int ds_var_field_free(struct ds_var_field *dsvf);
 _RIBS_INLINE_ int ds_var_field_get(struct ds_var_field *dsvf, size_t index, char **ret_ptr, size_t *ret_size);
 _RIBS_INLINE_ const char *ds_var_field_get_cstr(struct ds_var_field *dsvf, size_t index);
+_RIBS_INLINE_ size_t ds_var_field_num_elements(struct ds_var_field *dsvf);
 
 int ds_var_field_writer_init(struct ds_var_field_writer *dsvfw, const char *filename);
 int ds_var_field_writer_write(struct ds_var_field_writer *dsvfw, const void *data, size_t data_size);
