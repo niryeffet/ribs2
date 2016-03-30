@@ -21,6 +21,22 @@
 #include <zlib.h>
 #include <limits.h>
 
+static void *_zalloc(void *_vmb, uint32_t items, uint32_t size) {
+    struct vmbuf *vmb = _vmb;
+    return vmbuf_allocptr(vmb, items * size);
+}
+
+static void _zfree(void *_vmb UNUSED_ARG, void *ptr UNUSED_ARG) {
+}
+
+static inline void _init_alloc(z_stream *strm) {
+    static struct vmbuf zalloc_buf = VMBUF_INITIALIZER;
+    vmbuf_init(&zalloc_buf, 1024*1024*2);
+    strm->zalloc = _zalloc;
+    strm->zfree = _zfree;
+    strm->opaque = &zalloc_buf;
+}
+
 int vmbuf_deflate(struct vmbuf *buf) {
     return vmbuf_deflate3(buf, Z_DEFAULT_COMPRESSION);
 }
@@ -41,9 +57,7 @@ int vmbuf_deflate2(struct vmbuf *inbuf, struct vmbuf *outbuf) {
 
 int vmbuf_deflate4(struct vmbuf *inbuf, struct vmbuf *outbuf, int level) {
     z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
+    _init_alloc(&strm);
     if (Z_OK != deflateInit2(&strm, level, Z_DEFLATED, 15+16, 8, Z_DEFAULT_STRATEGY))
         return -1;
     int flush;
@@ -65,6 +79,33 @@ int vmbuf_deflate4(struct vmbuf *inbuf, struct vmbuf *outbuf, int level) {
     return 0;
 }
 
+int vmbuf_deflate_ptr(const void *inbuf, size_t inbuf_size, struct vmbuf *outbuf) {
+    return vmbuf_deflate_ptr2(inbuf, inbuf_size, outbuf, Z_DEFAULT_COMPRESSION);
+}
+
+int vmbuf_deflate_ptr2(const void *inbuf, size_t inbuf_size, struct vmbuf *outbuf, int level) {
+    z_stream strm;
+    _init_alloc(&strm);
+    if (Z_OK != deflateInit2(&strm, level, Z_DEFLATED, 15+16, 8, Z_DEFAULT_STRATEGY))
+        return -1;
+    int flush;
+    strm.next_in = (void *)inbuf;
+    strm.avail_in = inbuf_size;
+    do {
+        vmbuf_resize_if_less(outbuf, strm.avail_in << 1);
+        strm.next_out = (uint8_t *)vmbuf_wloc(outbuf);
+        strm.avail_out = vmbuf_wavail(outbuf);
+        flush = strm.avail_in == 0 ? Z_FINISH : Z_NO_FLUSH;
+        if (Z_STREAM_ERROR == deflate(&strm, flush)) {
+            deflateEnd(&strm);
+            return -1;
+        }
+        vmbuf_wseek(outbuf, vmbuf_wavail(outbuf) - strm.avail_out);
+    } while (flush != Z_FINISH);
+    deflateEnd(&strm);
+    return 0;
+}
+
 int vmbuf_inflate(struct vmbuf *buf) {
     static struct vmbuf outbuf = VMBUF_INITIALIZER;
     vmbuf_init(&outbuf, vmbuf_ravail(buf));
@@ -76,9 +117,7 @@ int vmbuf_inflate(struct vmbuf *buf) {
 
 int vmbuf_inflate2(struct vmbuf *inbuf, struct vmbuf *outbuf) {
     z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
+    _init_alloc(&strm);
     if (Z_OK != inflateInit2(&strm, 15+16))
         return -1;
     for (;;)
@@ -102,45 +141,32 @@ int vmbuf_inflate2(struct vmbuf *inbuf, struct vmbuf *outbuf) {
     return 0;
 }
 
-int vmbuf_inflate_gzip(void *inbuf, size_t in_size, struct vmbuf *outbuf)
-{
-    if (NULL == inbuf || 0 == in_size)
-        return -1;
+int vmbuf_inflate_gzip(void *inbuf, size_t inbuf_size, struct vmbuf *outbuf) {
+    return vmbuf_inflate_ptr(inbuf, inbuf_size, outbuf);
+}
+
+int vmbuf_inflate_ptr(void *inbuf, size_t inbuf_size, struct vmbuf *outbuf) {
     z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.next_in = (uint8_t*)inbuf;
-    size_t avail_in = (in_size > UINT_MAX) ? UINT_MAX : in_size;
-    strm.avail_in = avail_in;
-    if (Z_OK != inflateInit2(&strm, 15 + 32)) {
+    _init_alloc(&strm);
+    if (Z_OK != inflateInit2(&strm, 15+16))
         return -1;
-    }
-    size_t total_read = 0;
-    for (;;)
+    strm.next_in = inbuf;
+    strm.avail_in = inbuf_size;
+    for (;0 < strm.avail_in;)
     {
-        if (0 == strm.avail_in)
-            break;
-        if (0 > vmbuf_resize_if_less(outbuf, ((size_t)strm.avail_in) << 1)) {
+        if (0 > vmbuf_resize_if_less(outbuf, strm.avail_in << 1))
             return inflateEnd(&strm), -1;
-        }
-        strm.next_out = (uint8_t*)vmbuf_wloc(outbuf);
-        size_t avail_out = vmbuf_wavail(outbuf);
-        avail_out = (avail_out > UINT_MAX) ? UINT_MAX : avail_out;
-        strm.avail_out = avail_out;
-        int ret = inflate(&strm, Z_NO_FLUSH);
-        vmbuf_wseek(outbuf, avail_out - strm.avail_out);
-        if (ret == Z_STREAM_END)
-            break;
-        if (Z_OK != ret) {
+        strm.next_out = (uint8_t *)vmbuf_wloc(outbuf);
+        strm.avail_out = vmbuf_wavail(outbuf);
+        int res = inflate(&strm, Z_NO_FLUSH);
+        vmbuf_wseek(outbuf, vmbuf_wavail(outbuf) - strm.avail_out);
+        if (res == Z_STREAM_END)
+            return inflateEnd(&strm), strm.avail_in == 0 ? 0 : -1; /* return error if inbuf has extra data */
+        if (Z_OK != res)
             return inflateEnd(&strm), -1;
-        }
-        total_read += avail_in - strm.avail_in;
-        strm.next_in = (uint8_t*)inbuf + total_read;
-        avail_in = in_size - total_read;
-        avail_in = (avail_in > UINT_MAX) ? UINT_MAX : avail_in;
-        strm.avail_in = avail_in;
     }
     inflateEnd(&strm);
-    return 0;
+    return -1; /* if we reached here, we have partial outbuf */
+
 }
+
