@@ -81,10 +81,11 @@ static inline int vmbuf_resize_if_full(struct vmbuf *vmbuf) {
 }
 
 static inline int vmbuf_resize_if_less(struct vmbuf *vmbuf, size_t desired_size) {
-    size_t wa = vmbuf_wavail(vmbuf);
-    if (desired_size <= wa)
-        return 0;
-    return vmbuf_resize_to(vmbuf, vmbuf_size(vmbuf) + desired_size);
+    while (desired_size > vmbuf_wavail(vmbuf)) {
+        if (0 > vmbuf_add_capacity(vmbuf))
+            return -1;
+    }
+    return 0;
 }
 
 static inline int vmbuf_resize_by(struct vmbuf *vmbuf, size_t by) {
