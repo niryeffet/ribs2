@@ -86,6 +86,18 @@ void index_container_o2o_exist(char *type) {
     write_code(index_container_file, "};");
 }
 
+void index_container_o2o_min_element(char *type) {
+    write_code(index_container_file, "\n\nstatic inline %s index_container_o2o_min_element_%s(struct index_container_o2o_%s *ic) {\n", type, type, type, type);
+    write_code(index_container_file, "    return ic->data[0].key;\n");
+    write_code(index_container_file, "};");
+}
+
+void index_container_o2o_max_element(char *type) {
+    write_code(index_container_file, "\n\nstatic inline %s index_container_o2o_max_element_%s(struct index_container_o2o_%s *ic) {\n", type, type, type, type);
+    write_code(index_container_file, "    return ic->data[ic->header->num_keys - 1].key;\n");
+    write_code(index_container_file, "};");
+}
+
 void index_container_o2o_free(char *type) {
     write_code(index_container_file, "\n\nstatic inline int index_container_o2o_free_%s(struct index_container_o2o_%s *ic) {\n", type, type);
     write_code(index_container_file, "    return file_mapper_free(&ic->fm);\n");
@@ -175,6 +187,8 @@ void ds_code_gen_index_container(const char *filename) {
         index_container_o2o_init2(ds_types[i]);
         index_container_o2o_lookup(ds_types[i]);
         index_container_o2o_exist(ds_types[i]);
+        index_container_o2o_min_element(ds_types[i]);
+        index_container_o2o_max_element(ds_types[i]);
         index_container_o2o_free(ds_types[i]);
         struct_index_container_o2m(ds_types[i]);
         index_container_o2m_init(ds_types[i]);
