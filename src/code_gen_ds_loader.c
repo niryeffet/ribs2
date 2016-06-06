@@ -84,7 +84,8 @@ int ds_loader_init(struct ds_loader_code_gen *loader) {
         return LOGGER_ERROR("filename too long"), ds_loader_close(loader), -1;
     if (!(loader->file_c = fopen(filename, "w")))
         return LOGGER_PERROR("fopen"), ds_loader_close(loader), -1;
-    if (0 > vmbuf_init(&loader->file_list_buf, 0))
+    if (0 > vmbuf_init(&loader->file_free_buf, 0) ||
+            0 > vmbuf_init(&loader->file_list_buf, 0))
         return LOGGER_ERROR("vmbuf_init"), ds_loader_close(loader), -1;
     loader->typename = strdup(typename);
 
@@ -100,6 +101,7 @@ int ds_loader_init(struct ds_loader_code_gen *loader) {
     write_generated_file_comment(loader->file_c, typename);
     WRITE_CODE(loader->file_c, "#include \"%s.h\"\n", loader->typename);
     WRITE_CODE(loader->file_c, "#include \"vmbuf.h\"\n");
+    WRITE_CODE(loader->file_c, "#include \"logger.h\"\n");
     WRITE_CODE(loader->file_c, "\n");
     WRITE_CODE(loader->file_c, "int %s_init(%s_t *ds_loader, const char *base_dir) {\n", loader->typename, loader->typename);
     WRITE_CODE(loader->file_c, "    int res = 0;\n");
@@ -107,6 +109,7 @@ int ds_loader_init(struct ds_loader_code_gen *loader) {
     WRITE_CODE(loader->file_c, "    vmbuf_init(&vmb, 4096);\n");
     WRITE_CODE(loader->file_c, "\n");
 
+    vmbuf_sprintf(&loader->file_free_buf, "int %s_free(%s_t *ds_loader) {\n", loader->typename, loader->typename);
     vmbuf_sprintf(&loader->file_list_buf, "const char *%s_files[] = {\n", loader->typename);
     return 0;
 }
@@ -118,6 +121,7 @@ int ds_loader_close(struct ds_loader_code_gen *loader) {
     WRITE_CODE(loader->file_h, "} %s_t;\n", loader->typename);
     WRITE_CODE(loader->file_h, "\n");
     WRITE_CODE(loader->file_h, "int %s_init(%s_t *ds_loader, const char *base_dir);\n", loader->typename, loader->typename);
+    WRITE_CODE(loader->file_h, "int %s_free(%s_t *ds_loader);\n", loader->typename, loader->typename);
     WRITE_CODE(loader->file_h, "\n");
     WRITE_CODE(loader->file_h, "extern const char *%s_files[];\n", loader->typename);
     WRITE_CODE(loader->file_h, "\n");
@@ -126,6 +130,10 @@ int ds_loader_close(struct ds_loader_code_gen *loader) {
     WRITE_CODE(loader->file_c, "ds_loader_done:\n");
     WRITE_CODE(loader->file_c, "    vmbuf_free(&vmb);\n");
     WRITE_CODE(loader->file_c, "    return res;\n");
+    WRITE_CODE(loader->file_c, "}\n");
+    WRITE_CODE(loader->file_c, "\n");
+    WRITE_CODE(loader->file_c, "%.*s", vmbuf_wlocpos(&loader->file_free_buf), vmbuf_data(&loader->file_free_buf));
+    WRITE_CODE(loader->file_c, "    return 0;\n");
     WRITE_CODE(loader->file_c, "}\n");
     WRITE_CODE(loader->file_c, "\n");
     WRITE_CODE(loader->file_c, "%.*s", vmbuf_wlocpos(&loader->file_list_buf), vmbuf_data(&loader->file_list_buf));
@@ -138,6 +146,7 @@ int ds_loader_close(struct ds_loader_code_gen *loader) {
     free(loader->db_name);
     if (loader->table_name)
         free(loader->table_name);
+    vmbuf_free(&loader->file_free_buf);
     vmbuf_free(&loader->file_list_buf);
     return 0;
 }
@@ -167,6 +176,9 @@ int ds_loader_var_field(struct ds_loader_code_gen *loader, const char *name) {
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
 
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > ds_var_field_free(&ds_loader->"DS_LOADER_FIELD_NAME"))\n", DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
+
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH"\",\n", DS_LOADER_FIELD_PARAMS);
     return 0;
 }
@@ -184,6 +196,9 @@ int ds_loader_field(struct ds_loader_code_gen *loader, const char *name, ds_type
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
 
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > ds_field_%s_free(&ds_loader->"DS_LOADER_FIELD_NAME"))\n", type_str, DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
+
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH"\",\n", DS_LOADER_FIELD_PARAMS);
     return 0;
 }
@@ -196,6 +211,9 @@ int ds_loader_var_idx_o2o(struct ds_loader_code_gen *loader, const char *name) {
     WRITE_CODE(loader->file_c, "    if (0 > (res = var_index_container_o2o_init(&ds_loader->"DS_LOADER_FIELD_NAME"_idx, vmbuf_data(&vmb))))\n", DS_LOADER_FIELD_PARAMS);
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
+
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > var_index_container_o2o_close(&ds_loader->"DS_LOADER_FIELD_NAME"_idx))\n", DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"_idx\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
 
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".idx\",\n", DS_LOADER_FIELD_PARAMS);
     return 0;
@@ -214,6 +232,9 @@ int ds_loader_idx_o2o(struct ds_loader_code_gen *loader, const char *name, ds_ty
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
 
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > index_container_o2o_free_%s(&ds_loader->"DS_LOADER_FIELD_NAME"_idx))\n", type_str, DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"_idx\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
+
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".idx\",\n", DS_LOADER_FIELD_PARAMS);
     return 0;
 }
@@ -226,6 +247,9 @@ int ds_loader_var_idx_o2m(struct ds_loader_code_gen *loader, const char *name) {
     WRITE_CODE(loader->file_c, "    if (0 > (res = var_index_container_o2m_init(&ds_loader->"DS_LOADER_FIELD_NAME"_idx, vmbuf_data(&vmb))))\n", DS_LOADER_FIELD_PARAMS);
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
+
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > var_index_container_o2m_close(&ds_loader->"DS_LOADER_FIELD_NAME"_idx))\n", DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"_idx\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
 
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".keys\",\n", DS_LOADER_FIELD_PARAMS);
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".idx\",\n", DS_LOADER_FIELD_PARAMS);
@@ -245,6 +269,9 @@ int ds_loader_idx_o2m(struct ds_loader_code_gen *loader, const char *name, ds_ty
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
 
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > index_container_o2m_free_%s(&ds_loader->"DS_LOADER_FIELD_NAME"_idx))\n", type_str, DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"_idx\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
+
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".idx\",\n", DS_LOADER_FIELD_PARAMS);
     return 0;
 }
@@ -257,6 +284,9 @@ int ds_loader_idx_o2o_ht(struct ds_loader_code_gen *loader, const char *name) {
     WRITE_CODE(loader->file_c, "    if (0 > (res = hashtable_open(&ds_loader->"DS_LOADER_FIELD_NAME"_idx, 0, vmbuf_data(&vmb), O_RDONLY)))\n", DS_LOADER_FIELD_PARAMS);
     WRITE_CODE(loader->file_c, "        goto ds_loader_done;\n");
     WRITE_CODE(loader->file_c, "\n");
+
+    vmbuf_sprintf(&loader->file_free_buf, "    if (0 > hashtable_close(&ds_loader->"DS_LOADER_FIELD_NAME"_idx))\n", DS_LOADER_FIELD_PARAMS);
+    vmbuf_sprintf(&loader->file_free_buf, "        return LOGGER_ERROR_FUNC(\""DS_LOADER_FIELD_NAME"_idx\"), -1;\n\n", DS_LOADER_FIELD_PARAMS);
 
     vmbuf_sprintf(&loader->file_list_buf, "    \""DS_LOADER_FIELD_PATH".idx\",\n", DS_LOADER_FIELD_PARAMS);
     return 0;

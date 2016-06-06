@@ -31,9 +31,10 @@ struct ds_loader_code_gen {
     char *table_name;
     char *typename;
     struct vmbuf file_list_buf;
+    struct vmbuf file_free_buf;
 };
 
-#define DS_LOADER_CODE_GEN_INITIALIZER {NULL, NULL, NULL, NULL, NULL, VMBUF_INITIALIZER};
+#define DS_LOADER_CODE_GEN_INITIALIZER {NULL, NULL, NULL, NULL, NULL, VMBUF_INITIALIZER, VMBUF_INITIALIZER};
 
 int ds_loader_init(struct ds_loader_code_gen *loader);
 int ds_loader_close(struct ds_loader_code_gen *loader);
