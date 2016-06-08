@@ -5,11 +5,17 @@ all:
 	@$(MAKE) -C src -s
 	@echo "[ribs2] success"
 	@$(MAKE) -s $(EXAMPLES:%=example_%)
+	@$(MAKE) -s unit_tests
 
 example_%:
 	@echo "[examples/$(@:example_%=%)] build"
 	@$(MAKE) -C examples/$(@:example_%=%)/src -s
 	@echo "[examples/$(@:example_%=%)] success"
+
+unit_tests:
+	@echo "[$@] build"
+	@$(MAKE) -C tests/src -s
+	@echo "[$@] success"
 
 clean: $(EXAMPLES:%=clean_example_%)
 	@echo "[ribs2] clean"
