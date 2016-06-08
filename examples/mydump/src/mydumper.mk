@@ -12,6 +12,6 @@ LDFLAGS+= -L ../../../lib -lribs2 -lribs2_mysql
 
 # as well as where to find the mysql libraries
 LDFLAGS+=-L../ribified -pthread -lribs2_mysql -lmysqlclient \
-                -lm -lz -ldl -L../../ribs2/lib -lribs2
+                -lm -lz -ldl -L../../ribs2/lib -lribs2 -lstdc++
 
 include ../../../make/ribs.mk  # include ribs2 make system
