@@ -59,6 +59,8 @@ char *ds_loader_type_to_str(ds_type_t type) {
         return "double";
     case ds_type_var:
         return "var";
+    case ds_type_array:
+        return "array";
     }
     LOGGER_ERROR("Unknown type %d", type);
     return NULL;

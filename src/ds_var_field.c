@@ -21,6 +21,7 @@
 #include "ds_types.h"
 #include "vmbuf.h"
 #include "logger.h"
+#include "ds.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -28,6 +29,7 @@
 struct ds_var_field_header {
     int64_t type;
     size_t ofs_table;
+    int64_t element_type; /* used when primary type is array */
 };
 
 int ds_var_field_init(struct ds_var_field *dsvf, const char *filename) {
@@ -50,6 +52,9 @@ int ds_var_field_init(struct ds_var_field *dsvf, const char *filename) {
     ofs_table &= ~((size_t)7);
     if (ofs_table != header->ofs_table)
         return LOGGER_ERROR_FUNC("%s: corrupted data detected", filename), file_mapper_free(&dsvf->data), -1;
+    if (ds_type_var != header->type && ds_type_array != header->type)
+        return LOGGER_ERROR_FUNC("%s: corrupted data detected, wrong type or unsupported", filename), file_mapper_free(&dsvf->data), -1;
+    dsvf->array_el_size = (ds_type_array == header->type ? ds_type_to_size(header->element_type) : 0);
     return 0;
 }
 
@@ -58,24 +63,26 @@ int ds_var_field_free(struct ds_var_field *dsvf) {
 }
 
 int ds_var_field_writer_init(struct ds_var_field_writer *dsvfw, const char *filename) {
+    return ds_var_field_writer_init2(dsvfw, filename, ds_type_var, -1);
+}
+
+int ds_var_field_writer_init_array(struct ds_var_field_writer *dsvfw, const char *filename, int64_t element_type) {
+    return ds_var_field_writer_init2(dsvfw, filename, ds_type_array, element_type);
+}
+
+int ds_var_field_writer_init2(struct ds_var_field_writer *dsvfw, const char *filename, int64_t type, int64_t element_type) {
     unlink(filename);
     if (0 > vmbuf_init(&dsvfw->ofs_table, 4096) ||
         0 > file_writer_init(&dsvfw->data, filename))
         return -1;
-    struct ds_var_field_header header = { -1, -1 };
+    struct ds_var_field_header header = {  -type, -1 , element_type }; /* set type to negative value so load fails if not finalized */
     if (0 > file_writer_write(&dsvfw->data, &header, sizeof(header)))
         return -1;
     return 0;
 }
 
-static inline int _ds_var_field_writer_store_ofs(struct ds_var_field_writer *dsvfw) {
-    size_t ofs = file_writer_wlocpos(&dsvfw->data);
-    *(size_t *)vmbuf_wloc(&dsvfw->ofs_table) = ofs;
-    return vmbuf_wseek(&dsvfw->ofs_table, sizeof(size_t));
-}
-
 int ds_var_field_writer_write(struct ds_var_field_writer *dsvfw, const void *data, size_t data_size) {
-    _ds_var_field_writer_store_ofs(dsvfw);
+    ds_var_field_writer_new_row(dsvfw);
     return file_writer_write(&dsvfw->data, data, data_size);
 }
 
@@ -84,16 +91,21 @@ int ds_var_field_writer_append(struct ds_var_field_writer *dsvfw, const void *da
 }
 
 int ds_var_field_writer_close(struct ds_var_field_writer *dsvfw) {
-    if (0 > _ds_var_field_writer_store_ofs(dsvfw) ||
+    if (0 > ds_var_field_writer_new_row(dsvfw) ||
         0 > file_writer_align(&dsvfw->data))
         return -1;
-    struct ds_var_field_header header = { ds_type_var, file_writer_wlocpos(&dsvfw->data) };
+    size_t ofs_table = file_writer_wlocpos(&dsvfw->data);
     if (0 > file_writer_write(&dsvfw->data, vmbuf_data(&dsvfw->ofs_table), vmbuf_wlocpos(&dsvfw->ofs_table)))
         return -1;
+
     size_t ofs_last = file_writer_wlocpos(&dsvfw->data);
-    if (0 > file_writer_lseek(&dsvfw->data, 0, SEEK_SET) ||
-        0 > file_writer_write(&dsvfw->data, &header, sizeof(header)) ||
-        0 > file_writer_lseek(&dsvfw->data, ofs_last, SEEK_SET) ||
+    if (0 > file_writer_lseek(&dsvfw->data, 0, SEEK_SET))
+        return -1;
+
+    struct ds_var_field_header *header = (struct ds_var_field_header *)file_writer_wloc(&dsvfw->data);
+    header->type = -header->type;
+    header->ofs_table = ofs_table;
+    if (0 > file_writer_lseek(&dsvfw->data, ofs_last, SEEK_SET) ||
         0 > file_writer_close(&dsvfw->data))
         return -1;
     vmbuf_free(&dsvfw->ofs_table);

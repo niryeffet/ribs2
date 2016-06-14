@@ -25,7 +25,7 @@
 #include "file_writer.h"
 #include "vmbuf.h"
 
-#define DS_VAR_FIELD_INITIALIZER { FILE_MAPPER_INITIALIZER, NULL, 0 }
+#define DS_VAR_FIELD_INITIALIZER { FILE_MAPPER_INITIALIZER, NULL, 0, 0 }
 #define DS_VAR_FIELD_WRITER_INITIALIZER { VMBUF_INITIALIZER, FILE_WRITER_INITIALIZER }
 #define DS_VAR_FIELD_INIT(var) (var) = (struct ds_var_field)DS_VAR_FIELD_INITIALIZER
 #define DS_VAR_FIELD_WRITER_INIT(var) (var) = (struct ds_var_field_writer)DS_VAR_FIELD_WRITER_INITIALIZER
@@ -34,6 +34,7 @@ struct ds_var_field {
     struct file_mapper data;
     size_t *ofs_table;
     size_t num_elements;
+    size_t array_el_size;
 };
 
 struct ds_var_field_writer {
@@ -44,13 +45,18 @@ struct ds_var_field_writer {
 int ds_var_field_init(struct ds_var_field *dsvf, const char *filename);
 int ds_var_field_free(struct ds_var_field *dsvf);
 _RIBS_INLINE_ int ds_var_field_get(struct ds_var_field *dsvf, size_t index, char **ret_ptr, size_t *ret_size);
+_RIBS_INLINE_ int ds_var_field_get_array_ptr(struct ds_var_field *dsvf, size_t index, void **ret_ptr, size_t *ret_size);
+_RIBS_INLINE_ void *ds_var_field_get_array(struct ds_var_field *dsvf, size_t index, size_t *num_elements);
 _RIBS_INLINE_ const char *ds_var_field_get_cstr(struct ds_var_field *dsvf, size_t index);
 _RIBS_INLINE_ size_t ds_var_field_num_elements(struct ds_var_field *dsvf);
 
 int ds_var_field_writer_init(struct ds_var_field_writer *dsvfw, const char *filename);
+int ds_var_field_writer_init_array(struct ds_var_field_writer *dsvfw, const char *filename, int64_t element_type);
+int ds_var_field_writer_init2(struct ds_var_field_writer *dsvfw, const char *filename, int64_t type, int64_t element_type);
 int ds_var_field_writer_write(struct ds_var_field_writer *dsvfw, const void *data, size_t data_size);
 int ds_var_field_writer_append(struct ds_var_field_writer *dsvfw, const void *data, size_t data_size);
 int ds_var_field_writer_close(struct ds_var_field_writer *dsvfw);
+_RIBS_INLINE_ int ds_var_field_writer_new_row(struct ds_var_field_writer *dsvfw);
 
 #include "../src/_ds_var_field.c"
 

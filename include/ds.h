@@ -81,6 +81,7 @@
 #define _DS_TYPE(x) ds_type_ ## x
 #define DS_TYPE(x) _DS_TYPE(x)
 #define _DS_TYPE_TO_STR(x) case ds_type_ ## x: return STRINGIFY(DS_TYPE(x))
+#define _DS_TYPE_TO_SIZE(x) case ds_type_ ## x: return sizeof(x)
 
 static inline const char *ds_type_to_string(int64_t t) {
     switch(t) {
@@ -95,8 +96,26 @@ static inline const char *ds_type_to_string(int64_t t) {
         _DS_TYPE_TO_STR(float);
         _DS_TYPE_TO_STR(double);
         _DS_TYPE_TO_STR(var);
+        _DS_TYPE_TO_STR(array);
     default:
         return "unknown";
+    }
+}
+
+static inline size_t ds_type_to_size(int64_t t) {
+    switch(t) {
+        _DS_TYPE_TO_SIZE(int8_t);
+        _DS_TYPE_TO_SIZE(uint8_t);
+        _DS_TYPE_TO_SIZE(int16_t);
+        _DS_TYPE_TO_SIZE(uint16_t);
+        _DS_TYPE_TO_SIZE(int32_t);
+        _DS_TYPE_TO_SIZE(uint32_t);
+        _DS_TYPE_TO_SIZE(int64_t);
+        _DS_TYPE_TO_SIZE(uint64_t);
+        _DS_TYPE_TO_SIZE(float);
+        _DS_TYPE_TO_SIZE(double);
+    default:
+        return SIZE_MAX;
     }
 }
 

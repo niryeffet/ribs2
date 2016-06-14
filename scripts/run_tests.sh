@@ -67,6 +67,7 @@ function test_https()
     run_tests https
     rm -f httpd.pem httpd.key
 }
+./tests/bin/test_ribs2 || die "unit tests"
 
 ulimit -Ss 4096
 # over 2MB to force mremap to move pointers

@@ -32,6 +32,7 @@ typedef enum {
     ds_type_float,
     ds_type_double,
     ds_type_var,
+    ds_type_array,
 } ds_type_t;
 
 #endif // _DS_TYPES__H_

@@ -6,7 +6,7 @@
  */
 #include <inttypes.h>
 
-#define mu_fail_idx(message, ...) return mu_assert_msg(__FILE__, __LINE__, index, message, ##__VA_ARGS__);
+#define mu_fail_idx(index, message, ...) return mu_assert_msg(__FILE__, __LINE__, index, message, ##__VA_ARGS__);
 #define mu_fail(message, ...) mu_fail_idx(INT64_MIN, message, ##__VA_ARGS__)
 
 #define mu_assert_idx(index, test, message, ...) do { if (!(test)) return mu_assert_msg(__FILE__, __LINE__, index, message, ##__VA_ARGS__); } while (0)

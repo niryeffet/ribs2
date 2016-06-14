@@ -123,7 +123,7 @@ $(DEP): $(DS_TARGETS)
 
 ../ribified/%: $(RIBIFY_DIR)
 	@echo "  (RIBIFY) $(@:../ribified/%=%) [ $@ $(RIBIFYFLAGS) ]"
-	@objcopy $(shell find $(RIBIFY_LIB_PATH) /usr/lib -name $(@:../ribified/%=%) 2>/dev/null) $@ $(RIBIFYFLAGS)
+	@objcopy $(shell find $(RIBIFY_LIB_PATH) /usr/lib /usr/local/lib -name $(@:../ribified/%=%) | head -1 2>/dev/null) $@ $(RIBIFYFLAGS)
 
 $(BIN_DIR)/$(TARGET): $(OBJ) $(RIBIFY:%=../ribified/%) $(EXTRA_DEPS)
 	@echo "  (LD)     $(@:$(BIN_DIR)/%=%)  [ -o $@ $(OBJ) $(LDFLAGS) ]"

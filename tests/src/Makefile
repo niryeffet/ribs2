@@ -1,6 +1,6 @@
 TARGET=test_ribs2
 
-SRC=test_ribs.c test_kmeans.c
+SRC=test_ribs.c test_kmeans.c test_ds_var_field.c
 
 CFLAGS+= -I ../../include
 LDFLAGS+= -L ../../lib -lribs2
