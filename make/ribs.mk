@@ -79,6 +79,8 @@ DEP_DS=$(DS_TARGETS_C:ds_loader_%.c=$(OBJ_DIR)/%_ds.d)
 
 ALL_OUTPUT_FILES+=$(DS_TARGETS) $(TARGET_FILE) $(DS_TARGETS_C:ds_loader_%.c=$(BIN_DIR)/%_ds)
 
+CURRENT_DIR=$(shell pwd)
+
 all: $(TARGET_FILE)
 
 $(ALL_DIRS):
@@ -96,7 +98,7 @@ $(BIN_DIR)/%_ds: $(OBJ_DS)
 
 $(OBJ_DIR)/%.o: %.c $(OBJ_DIR)/%.d
 	@echo "  (C)      $*.c  [ $(CPPFLAGS) -c $(CFLAGS) $*.c -o $(OBJ_DIR)/$*.o ]"
-	@$(CC) $(CPPFLAGS) -c $(CFLAGS) $*.c -o $(OBJ_DIR)/$*.o
+	@$(CC) $(CPPFLAGS) -c $(CFLAGS) $(CURRENT_DIR)/$*.c -o $(OBJ_DIR)/$*.o
 
 $(OBJ_DIR)/%.o: %.S
 	@echo "  (ASM)    $*.S  [ $(CPPFLAGS) -c $(CFLAGS) $*.S -o $(OBJ_DIR)/$*.o ]"
