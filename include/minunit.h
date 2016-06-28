@@ -16,7 +16,7 @@
 #define mu_assert_eq2_idx(index, test, actual, expected, fmt, type) mu_assert_idx(index, test, #actual " != " #expected "    actual: " fmt ", expected: " fmt, (type)(actual), (type)(expected))
 #define mu_assert_eqi_idx(index, actual, expected) mu_assert_eq2_idx(index, (actual) == (expected), actual, expected, "%" PRId64, int64_t)
 #define mu_assert_eqf_idx(index, actual, expected) mu_assert_eq2_idx(index, fabs(actual - expected) < DBL_EPSILON, actual, expected, "%.5f", double)
-#define mu_assert_eqs_idx(index, actual, expected) mu_assert_eq2_idx(index, 0 == strcmp(actual, expected), actual, expected, "%s", const char *)
+#define mu_assert_eqs_idx(index, actual, expected) mu_assert_eq2_idx(index, 0 == strcmp(actual, expected), actual, expected, "\"%s\"", const char *)
 
 #define mu_assert_eq2(test, actual, expected, fmt, type) mu_assert_eq2_idx(INT64_MIN, actual, expected, fmt, type)
 #define mu_assert_eqi(actual, expected) mu_assert_eqi_idx(INT64_MIN, actual, expected)
