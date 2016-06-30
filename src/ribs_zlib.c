@@ -60,21 +60,20 @@ int vmbuf_deflate4(struct vmbuf *inbuf, struct vmbuf *outbuf, int level) {
     _init_alloc(&strm);
     if (Z_OK != deflateInit2(&strm, level, Z_DEFLATED, 15+16, 8, Z_DEFAULT_STRATEGY))
         return -1;
-    int flush;
+    int flush, res;
+    strm.next_in = (uint8_t *)vmbuf_rloc(inbuf);
+    strm.avail_in = vmbuf_ravail(inbuf);
     do {
-        strm.next_in = (uint8_t *)vmbuf_rloc(inbuf);
-        strm.avail_in = vmbuf_ravail(inbuf);
-        vmbuf_resize_if_less(outbuf, strm.avail_in << 1);
         strm.next_out = (uint8_t *)vmbuf_wloc(outbuf);
         strm.avail_out = vmbuf_wavail(outbuf);
-        flush = vmbuf_ravail(inbuf) == 0 ? Z_FINISH : Z_NO_FLUSH;
-        if (Z_STREAM_ERROR == deflate(&strm, flush)) {
+        flush = strm.avail_in == 0 ? Z_FINISH : Z_NO_FLUSH;
+        if (Z_STREAM_ERROR == (res = deflate(&strm, flush))) {
             deflateEnd(&strm);
             return -1;
         }
         vmbuf_wseek(outbuf, vmbuf_wavail(outbuf) - strm.avail_out);
-        vmbuf_rseek(inbuf, vmbuf_ravail(inbuf) - strm.avail_in);
-    } while (flush != Z_FINISH);
+    } while (Z_STREAM_END == res);
+    vmbuf_rseek(inbuf, vmbuf_ravail(inbuf));
     deflateEnd(&strm);
     return 0;
 }
@@ -88,20 +87,19 @@ int vmbuf_deflate_ptr2(const void *inbuf, size_t inbuf_size, struct vmbuf *outbu
     _init_alloc(&strm);
     if (Z_OK != deflateInit2(&strm, level, Z_DEFLATED, 15+16, 8, Z_DEFAULT_STRATEGY))
         return -1;
-    int flush;
+    int flush, res;
     strm.next_in = (void *)inbuf;
     strm.avail_in = inbuf_size;
     do {
-        vmbuf_resize_if_less(outbuf, strm.avail_in << 1);
         strm.next_out = (uint8_t *)vmbuf_wloc(outbuf);
         strm.avail_out = vmbuf_wavail(outbuf);
         flush = strm.avail_in == 0 ? Z_FINISH : Z_NO_FLUSH;
-        if (Z_STREAM_ERROR == deflate(&strm, flush)) {
+        if (Z_STREAM_ERROR == (res = deflate(&strm, flush))) {
             deflateEnd(&strm);
             return -1;
         }
         vmbuf_wseek(outbuf, vmbuf_wavail(outbuf) - strm.avail_out);
-    } while (flush != Z_FINISH);
+    } while (Z_STREAM_END != res);
     deflateEnd(&strm);
     return 0;
 }
