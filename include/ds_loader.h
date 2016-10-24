@@ -54,6 +54,9 @@ int ds_loader_verify_files(const char *path, const char **files);
 #define IDX_O2O_LOADER(T,name)                                          \
     IDX_CONTAINER_O2O(T) MACRO_CONCAT(DS_FIELD_MAKE(DB_NAME,TABLE_NAME,name),_idx);
 
+#define IDX_O2O_HT_LOADER(name)                                         \
+        struct hashtable MACRO_CONCAT(DS_FIELD_MAKE(DB_NAME,TABLE_NAME,name),_idx);
+
 #define IDX_O2M_LOADER(T,name)                                          \
     IDX_CONTAINER_O2M(T) MACRO_CONCAT(DS_FIELD_MAKE(DB_NAME,TABLE_NAME,name),_idx);
 
@@ -103,6 +106,14 @@ int ds_loader_verify_files(const char *path, const char **files);
     if (0 > (res = IDX_CONTAINER_O2O_INIT(T, &(ds_loader->MACRO_CONCAT(DS_FIELD_MAKE(DB_NAME,TABLE_NAME,name),_idx)), vmbuf_data(&vmb)))) \
         goto ds_loader_done;
 
+#undef IDX_O2O_HT_LOADER
+#define IDX_O2O_HT_LOADER(name)                                         \
+    vmbuf_reset(&vmb);                                                  \
+    vmbuf_sprintf(&vmb, "%s/%s/%s/%s.idx", base_dir, DS_STRIGIFY(DB_NAME), DS_STRIGIFY(TABLE_NAME), #name); \
+    if (0 > (res = hashtable_open(&(ds_loader->MACRO_CONCAT(DS_FIELD_MAKE(DB_NAME,TABLE_NAME,name),_idx)), 0, vmbuf_data(&vmb), O_RDONLY))) \
+        goto ds_loader_done;
+
+
 #undef IDX_O2M_LOADER
 #define IDX_O2M_LOADER(T,name)                                          \
     vmbuf_reset(&vmb);                                                  \
@@ -136,6 +147,7 @@ int ds_loader_verify_files(const char *path, const char **files);
 #undef DS_LOADER_END
 #undef DS_FIELD_LOADER
 #undef IDX_O2O_LOADER
+#undef IDX_O2O_HT_LOADER
 #undef IDX_O2M_LOADER
 #undef DS_VAR_FIELD_LOADER
 #undef VAR_IDX_O2M_LOADER
@@ -146,6 +158,8 @@ int ds_loader_verify_files(const char *path, const char **files);
 #define DS_FIELD_LOADER(T,name)                 \
     DS_MAKE_PATH(DB_NAME,TABLE_NAME,name,""),
 #define IDX_O2O_LOADER(T,name)                          \
+    DS_MAKE_PATH(DB_NAME,TABLE_NAME,name,".idx"),
+#define IDX_O2O_HT_LOADER(name)                      \
     DS_MAKE_PATH(DB_NAME,TABLE_NAME,name,".idx"),
 #define IDX_O2M_LOADER(T,name)                          \
     DS_MAKE_PATH(DB_NAME,TABLE_NAME,name,".idx"),
@@ -168,6 +182,7 @@ int ds_loader_verify_files(const char *path, const char **files);
 #undef DS_LOADER_END
 #undef DS_FIELD_LOADER
 #undef IDX_O2O_LOADER
+#undef IDX_O2O_HT_LOADER
 #undef IDX_O2M_LOADER
 #undef DS_VAR_FIELD_LOADER
 #undef VAR_IDX_O2M_LOADER

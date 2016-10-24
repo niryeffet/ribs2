@@ -19,9 +19,8 @@
 */
 #ifndef _JSON_DOM__H_
 #define _JSON_DOM__H_
-#include "ribs.h"
 #include "vmbuf.h"
-
+#include "hashtable.h"
 #include <stdint.h>
 
 enum {
@@ -35,6 +34,7 @@ struct json_dom_node {
     const char *value;
     uint32_t value_len;
     int type;
+    uint32_t children_count;
     struct json_dom_node *parent;
     struct json_dom_node *first_child;
     struct json_dom_node *last_child;
@@ -59,8 +59,9 @@ int json_dom_get_double_val(struct json_dom_node *node, double *double_out);
 int json_dom_copy_str_val(struct json_dom_node *node, char **str_out);
 int json_dom_get_array_size(struct json_dom_node *node, int *size_out);
 int json_dom_build_index(struct json_dom *js, int max_level, struct hashtable *ht);
+struct json_dom_node *json_dom_index_find_path(struct hashtable *ht, const char *path);
 
-#define json_dom_int_from_child(node, name, val) json_dom_get_int_val(json_dom_find_child(node, name), val) 
+#define json_dom_int_from_child(node, name, val) json_dom_get_int_val(json_dom_find_child(node, name), val)
 #define json_dom_dub_from_child(node, name, val) json_dom_get_double_val(json_dom_find_child(node, name), val)
 #define json_dom_str_from_child(node, name, val) json_dom_copy_str_val(json_dom_find_child(node, name), val)
 

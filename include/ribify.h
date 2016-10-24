@@ -20,7 +20,7 @@
 #ifndef _RIBIFY__H_
 #define _RIBIFY__H_
 
-#include "ribs.h"
+#include <stddef.h>
 
 void *ribify_malloc(size_t size);
 void ribify_free(void *ptr);

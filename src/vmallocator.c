@@ -91,7 +91,7 @@ int vmallocator_init(struct vmallocator *v) {
     v->fd = -1;
     v->capacity = VM_ALLOC_MIN_SIZE;
     void *mem = mmap(NULL, v->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (MAP_FAILED == v->mem)
+    if (MAP_FAILED == mem)
         return LOGGER_PERROR("mmap"), -1;
     v->mem = mem;
     v->wlocpos = 0;

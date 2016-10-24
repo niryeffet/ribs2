@@ -64,6 +64,7 @@ _RIBS_INLINE_ void memalloc_reset2(struct memalloc *ma, int type) {
             mempool_free_chunk(cur_block, cur_block->size.size);
     }
     ma->avail = ma->capacity = 0;
+    ma->mem = NULL;
     list_set_null(&ma->memblocks);
 }
 

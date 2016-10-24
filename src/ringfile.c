@@ -144,6 +144,8 @@ int ringfile_init_safe_resize(struct ringfile *rb, const char *filename, size_t 
             return LOGGER_ERROR("reserved size mismatch, %zu != %zu", header.reserved_size, reserved_aligned), -1;
         if (capacity_aligned < header.capacity)
             return LOGGER_ERROR("capacity can't be reduced, %zu < %zu", capacity_aligned, header.capacity), -1;
+        else if (capacity_aligned > header.capacity && 0 > _ringfile_resize(filename, size, reserved, NULL))
+            return LOGGER_ERROR("failed to increase capacity, %zu ==> %zu", header.capacity, capacity_aligned), -1;
     }
     return ringfile_init(rb, filename, size, reserved);
 }

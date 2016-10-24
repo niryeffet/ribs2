@@ -21,6 +21,7 @@
 #define _MYSQL_COMMON__H_
 
 #include "ribs_defs.h"
+#include "var_index_gen.h"
 
 #define QUERY_INIT(q, ...) vmbuf_reset(query); vmbuf_sprintf(query, q, ##__VA_ARGS__)
 #define QUERY() (vmbuf_data(query))

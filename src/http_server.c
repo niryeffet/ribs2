@@ -392,6 +392,11 @@ static void http_server_accept_connections(void) {
             if (EAGAIN == errno)
                 continue;
             if (EMFILE == errno || ENFILE == errno) {
+                /*
+                 * If we run out of fds then we must be swamped with requests. So any new connections won't be serviced
+                 * in a timely manner. By the time we service them, they'll probably time out anyways. So instead of making
+                 * them wait to find out that we're overloaded, let them know immediately.
+                 */
                 LOGGER_PERROR("Not accepting connection on %s:%hu", inet_ntoa((struct in_addr){server->bind_addr}), server->port);
                 close(accept_reserved_fd);
                 fd = accept4(server->fd, (struct sockaddr *)&new_addr, &new_addr_size, SOCK_CLOEXEC | SOCK_NONBLOCK);

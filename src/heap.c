@@ -43,7 +43,7 @@ int heap_init(struct heap *h, size_t initial_size, size_t el_size, int (*compar)
         ofs[i] = i;
         _HEAP_DATA(i)->key = -1;
     }
-    return -1;
+    return 0;
 }
 
 void heap_free(struct heap *h) {

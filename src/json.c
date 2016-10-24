@@ -183,6 +183,11 @@ inline int json_parse(struct json *js, char *str)
         }
         ++js->cur;
     }
+
+    if (js->level) {
+        js->err = "unbalanced parenthesis";
+        return -1;
+    }
     return 0;
 }
 
@@ -239,6 +244,26 @@ void json_unescape_str(char *buf)
 }
 
 #define ESC_SEQ(c) *d++='\\';*d++=c;break;
+static size_t json_nescape_str(char *d, const char *s, uint32_t len) {
+    char *d0 = d;
+    uint32_t i = 0;
+    for(; i < len; ++i){
+        switch(s[i]){
+        case '"':
+        case '\\':
+        case '/':ESC_SEQ(s[i]);
+        case '\b':ESC_SEQ('b');
+        case '\f':ESC_SEQ('f');
+        case '\n':ESC_SEQ('n');
+        case '\r':ESC_SEQ('r');
+        case '\t':ESC_SEQ('t');
+        default: *d++ = s[i];
+        }
+    }
+    *d = 0;
+    return d - d0;
+}
+
 size_t json_escape_str(char *d, const char *s) {
     char *d0 = d;
     for(;*s;++s){
@@ -256,6 +281,13 @@ size_t json_escape_str(char *d, const char *s) {
     }
     *d = 0;
     return d - d0;
+}
+
+size_t json_nescape_str_vmb(struct vmbuf *buf, const char *s, uint32_t len) {
+    vmbuf_resize_if_less(buf, len * 2 + 1);
+    size_t l = json_nescape_str(vmbuf_wloc(buf), s, len);
+    vmbuf_wseek(buf, l);
+    return l;
 }
 
 size_t json_escape_str_vmb(struct vmbuf *buf, const char *s) {

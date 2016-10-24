@@ -115,4 +115,36 @@ static inline int var_index_gen_generate_ds_file (const char *base_path, const c
     return res;
 }
 
+static inline int var_index_gen_generate_ds_file_o2o(const char *base_path, const char *db, const char *table, const char *field) {
+    char output_filename[PATH_MAX];
+    if (PATH_MAX <= snprintf(output_filename, PATH_MAX, "%s/%s/%s/%s.idx", base_path, db, table, field))
+        return LOGGER_ERROR("output filename too long"), -1;
+    char filename[PATH_MAX];
+    // strlen("%s/%s/%s/%s") < strlen("%s/%s/%s/%s.idx"); not checking again
+    snprintf(filename, PATH_MAX, "%s/%s/%s/%s", base_path, db, table, field);
+
+    struct ds_var_field var_field = DS_VAR_FIELD_INITIALIZER;
+    if (0 > ds_var_field_init(&var_field, filename))
+        return LOGGER_ERROR("failed to init datastore"), -1;
+
+    struct hashtable ht_keys = HASHTABLE_INITIALIZER;
+    if (0 > hashtable_create(&ht_keys, 0, output_filename))
+        return LOGGER_ERROR("failed to init hashtable"), _exit_clean(&var_field), -1;
+
+    void *data = file_mapper_data(&var_field.data);
+    size_t *rec_begin = var_field.ofs_table;
+    size_t *rec_end = var_field.ofs_table + var_field.num_elements;
+    size_t *rec = rec_begin;
+    char *str = NULL;
+    uint32_t i = 0;
+    for (; rec != rec_end; ++rec, ++i) {
+        size_t *next_rec = rec + 1;
+        str = (char *) (data + *rec);
+        hashtable_insert(&ht_keys, str, (*next_rec - *rec), &i, sizeof(i));
+    }
+    hashtable_close(&ht_keys);
+    _exit_clean(&var_field);
+    return 0;
+}
+
 #endif // _VAR_IDX_GEN__H_

@@ -96,6 +96,8 @@ static inline char *vmbuf_data_ofs(struct vmbuf *vmbuf, size_t ofs);
 static inline char *vmbuf_wloc(struct vmbuf *vmbuf);
 static inline char *vmbuf_rloc(struct vmbuf *vmbuf);
 
+static inline void vmbuf_nul(struct vmbuf *vmbuf);
+
 /* inline functions */
 #include "../src/_vmbuf.c"
 

@@ -4,6 +4,7 @@
     limited to).
 
     Copyright (C) 2012,2013,2014 Adap.tv, Inc.
+    Copyright (C) 2015 TrueSkills, Inc.
 
     RIBS is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -216,7 +217,7 @@ int mysql_dumper_dump(struct mysql_login_info *mysql_login_info, const char *out
             if (*s) ds_type_str = s;
             if (0 > (err = file_writer_init(&ffields[i], vmbuf_data(&buf))) ||
                 0 > (err = file_writer_write(&ffields[i], &ds_type, sizeof(ds_type))))
-                break;;
+                break;
         }
         len = ribs_mysql_get_storage_size(field_types[i], fields[i].length);
         if (fdschema > 0)
@@ -300,8 +301,8 @@ int mysql_dumper_dump(struct mysql_login_info *mysql_login_info, const char *out
      */
     for (i = 0; i < n; ++i) {
         if (is_var_length_field(field_types[i])) {
-            if (0 > (err = ds_var_field_writer_close(&vfields[i])))
-                LOGGER_ERROR("failed to write offset");
+            if (0 > ds_var_field_writer_close(&vfields[i]))
+                err = -1, LOGGER_ERROR("failed to write offset");
         } else {
             file_writer_close(&ffields[i]);
         }

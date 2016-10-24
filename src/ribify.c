@@ -18,6 +18,8 @@
     along with RIBS.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "ribify.h"
+#include "epoll_worker.h"
+#include "sleep.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/types.h>

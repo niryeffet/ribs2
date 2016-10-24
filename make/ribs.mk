@@ -25,6 +25,10 @@ else
 OBJ_DIR=../obj/$(OBJ_SUB_DIR)
 endif
 
+ifndef BIN_DIR
+BIN_DIR=../bin
+endif
+
 ifneq ($(wildcard /usr/include/zlib.h),)
 CPPFLAGS+=-DHAVE_ZLIB
 endif
@@ -33,8 +37,8 @@ ifeq ($(RIBS2_SSL),1)
 CPPFLAGS+=-DRIBS2_SSL
 endif
 
-LDFLAGS+=-L../lib -lstdc++
-CFLAGS+=$(OPTFLAGS) -ggdb3 -W -Wall -Werror
+LDFLAGS+=-L../lib
+CFLAGS+=$(OPTFLAGS) -ggdb3 -W -Wall -Werror -Wextra
 GCCVER_GTE_4_7=$(shell expr `gcc -dumpversion` \>= 4.7)
 ifeq ($(GCCVER_GTE_4_7),1)
 CFLAGS+=-ftrack-macro-expansion=2
@@ -56,7 +60,7 @@ RIBIFYFLAGS+=$(subst --redefine-sym_,--redefine-sym ,$(join $(RIBIFY_SYMS:%=--re
 OBJ=$(SRC:%.c=$(OBJ_DIR)/%.o) $(ASM:%.S=$(OBJ_DIR)/%.o)
 DEP=$(SRC:%.c=$(OBJ_DIR)/%.d)
 
-DIRS=$(OBJ_DIR)/.dir ../bin/.dir ../lib/.dir
+DIRS=$(OBJ_DIR)/.dir $(BIN_DIR)/.dir ../lib/.dir
 RIBIFY_DIR=../ribified/.dir
 ALL_DIRS=$(DIRS) $(RIBIFY_DIR)
 ALL_OUTPUT_FILES=$(patsubst %,$(OBJ_DIR)/%,*.o *.d) ../ribified/*
@@ -65,10 +69,17 @@ ifeq ($(TARGET:%.a=%).a,$(TARGET))
 LIB_OBJ:=$(OBJ)
 TARGET_FILE=../lib/lib$(TARGET)
 else
-TARGET_FILE=../bin/$(TARGET)
+TARGET_FILE=$(BIN_DIR)/$(TARGET)
 endif
 
-ALL_OUTPUT_FILES+=$(TARGET_FILE)
+DS_TARGETS_C=$(filter ds_loader_%.c, $(SRC))
+DS_TARGETS=$(DS_TARGETS_C) $(DS_TARGETS_C:%.c=%.h)
+OBJ_DS=$(DS_TARGETS_C:ds_loader_%.c=$(OBJ_DIR)/%_ds.o)
+DEP_DS=$(DS_TARGETS_C:ds_loader_%.c=$(OBJ_DIR)/%_ds.d)
+
+ALL_OUTPUT_FILES+=$(DS_TARGETS) $(TARGET_FILE) $(DS_TARGETS_C:ds_loader_%.c=$(BIN_DIR)/%_ds)
+
+CURRENT_DIR=$(shell pwd)
 
 all: $(TARGET_FILE)
 
@@ -77,21 +88,34 @@ $(ALL_DIRS):
 	@-mkdir -p $(@:%/.dir=%)
 	@touch $@
 
+ds_loader_%.c ds_loader_%.h: $(BIN_DIR)/%_ds
+	@echo "  (EXEC)     $*_ds"
+	@RIBS_DS_NAME=ds_loader_$* $(BIN_DIR)/$*_ds
+
+$(BIN_DIR)/%_ds: $(OBJ_DS)
+	@echo "  (LD)     $(@:$(BIN_DIR)/%=%)  [ -o $@ $(OBJ_DIR)/$*_ds.o $(LDFLAGS) ]"
+	@$(CC) -o $@ $(OBJ_DIR)/$*_ds.o $(LDFLAGS)
+
 $(OBJ_DIR)/%.o: %.c $(OBJ_DIR)/%.d
 	@echo "  (C)      $*.c  [ $(CPPFLAGS) -c $(CFLAGS) $*.c -o $(OBJ_DIR)/$*.o ]"
-	@$(CC) $(CPPFLAGS) -c $(CFLAGS) $*.c -o $(OBJ_DIR)/$*.o
+	@$(CC) $(CPPFLAGS) -c $(CFLAGS) $(CURRENT_DIR)/$*.c -o $(OBJ_DIR)/$*.o
 
 $(OBJ_DIR)/%.o: %.S
 	@echo "  (ASM)    $*.S  [ $(CPPFLAGS) -c $(CFLAGS) $*.S -o $(OBJ_DIR)/$*.o ]"
 	@$(CC) $(CPPFLAGS) -c $(CFLAGS) $*.S -o $(OBJ_DIR)/$*.o
 
+$(OBJ_DIR)/%_ds.d: %_ds.c
+	@echo "  (DEP)    $*_ds.c"
+	@$(CC) -MM $(CPPFLAGS) $(CFLAGS) $(INCLUDES) $*_ds.c | sed -e 's|.*:|$(OBJ_DIR)/$*_ds.o:|' > $@
+
 $(OBJ_DIR)/%.d: %.c
 	@echo "  (DEP)    $*.c"
 	@$(CC) -MM $(CPPFLAGS) $(CFLAGS) $(INCLUDES) $*.c | sed -e 's|.*:|$(OBJ_DIR)/$*.o:|' > $@
 
-$(OBJ): $(DIRS)
+$(OBJ) $(OBJ_DS): $(DIRS)
 
-$(DEP): $(DIRS)
+$(DEP) $(DEP_DS): $(DIRS)
+$(DEP): $(DS_TARGETS)
 
 ../lib/%: $(LIB_OBJ)
 	@echo "  (AR)     $(@:../lib/%=%)  [ rcs $@ $^ ]"
@@ -101,10 +125,10 @@ $(DEP): $(DIRS)
 
 ../ribified/%: $(RIBIFY_DIR)
 	@echo "  (RIBIFY) $(@:../ribified/%=%) [ $@ $(RIBIFYFLAGS) ]"
-	@objcopy $(shell find $(RIBIFY_LIB_PATH) /usr/lib -name $(@:../ribified/%=%) 2>/dev/null) $@ $(RIBIFYFLAGS)
+	@objcopy $(shell find $(RIBIFY_LIB_PATH) /usr/lib /usr/local/lib -name $(@:../ribified/%=%) | head -1 2>/dev/null) $@ $(RIBIFYFLAGS)
 
-../bin/%: $(OBJ) $(RIBIFY:%=../ribified/%) $(EXTRA_DEPS)
-	@echo "  (LD)     $(@:../bin/%=%)  [ -o $@ $(OBJ) $(LDFLAGS) ]"
+$(BIN_DIR)/$(TARGET): $(OBJ) $(RIBIFY:%=../ribified/%) $(EXTRA_DEPS)
+	@echo "  (LD)     $(@:$(BIN_DIR)/%=%)  [ -o $@ $(OBJ) $(LDFLAGS) ]"
 	@$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 $(ALL_OUTPUT_FILES:%=%.__clean__):
