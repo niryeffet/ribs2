@@ -812,13 +812,13 @@ int http_server_generate_dir_list(const char *URI) {
     DIR *d = opendir(dir);
     int error = 0;
     if (d) {
-        struct dirent de, *dep;
-        while (0 == readdir_r(d, &de, &dep) && dep) {
-            if (de.d_name[0] == '.')
+        struct dirent *de = NULL;
+        while ((de = readdir(d))) {
+            if (de->d_name[0] == '.')
                 continue;
             struct stat st;
-            if (0 > fstatat(dirfd(d), de.d_name, &st, 0)) {
-                vmbuf_sprintf(payload, "<tr><td>ERROR: %s</td><td>N/A</td></tr>", de.d_name);
+            if (0 > fstatat(dirfd(d), de->d_name, &st, 0)) {
+                vmbuf_sprintf(payload, "<tr><td>ERROR: %s</td><td>N/A</td></tr>", de->d_name);
                 continue;
             }
             const char *slash = (S_ISDIR(st.st_mode) ? "/" : "");
@@ -826,7 +826,7 @@ int http_server_generate_dir_list(const char *URI) {
             t = localtime_r(&st.st_mtime, &t_res);
 
             vmbuf_strcpy(payload, "<tr>");
-            vmbuf_sprintf(payload, "<td><a href=\"%s%s\">%s%s</a></td>", de.d_name, slash, de.d_name, slash);
+            vmbuf_sprintf(payload, "<td><a href=\"%s%s\">%s%s</a></td>", de->d_name, slash, de->d_name, slash);
             vmbuf_strcpy(payload, "<td>");
             if (t)
                 vmbuf_strftime(payload, "%F %T", t);
