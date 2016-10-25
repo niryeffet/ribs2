@@ -24,7 +24,6 @@
 #include <netinet/tcp.h>
 #include <sys/uio.h>
 
-SSTRL(CRLFCRLF, "\r\n\r\n");
 SSTRL(CRLF, "\r\n");
 
 static struct sendemail_mta _global_mta = SENDEMAIL_MTA_INITIALIZER;
