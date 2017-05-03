@@ -288,21 +288,23 @@ static inline int http_client_read_headers(struct http_client_context *cctx, int
                   vmbuf, &cctx->response, th, cctx->fd)
     *eoh_ofs = eoh - *data + SSTRLEN(CRLFCRLF);
     *eoh = 0;
-    cctx->persistent = 1;
-    char *p = strstr(*data, CONNECTION);
+
+    SSTRL(HTTP, "HTTP/");
+    SSTRL(HTTP_1_1, "1.1");
+    if (0 != SSTRNCMP(HTTP, *data))
+        return -1;
+    const char *ver = *data + SSTRLEN(HTTP);
+    char *p = strchrnul(*data, ' ');
+    *code = (*p ? atoi(p + 1) : 0);
+    if (0 == *code)
+        return -1;
+    cctx->persistent = SSTRNCMP(HTTP_1_1, ver) <= 0 ? 1 : 0;
+    p = strstr(*data, CONNECTION);
     if (p != NULL) {
         p += SSTRLEN(CONNECTION);
         if (0 == SSTRNCMPI(CONNECTION_CLOSE, p))
             cctx->persistent = 0;
     }
-    SSTRL(HTTP, "HTTP/");
-    if (0 != SSTRNCMP(HTTP, *data))
-        return -1;
-
-    p = strchrnul(*data, ' ');
-    *code = (*p ? atoi(p + 1) : 0);
-    if (0 == *code)
-        return -1;
     return 0;
 }
 
