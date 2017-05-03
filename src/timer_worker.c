@@ -45,6 +45,12 @@ int timer_worker_schedule_next(time_t usec) {
     return _timer_worker_schedule_next(twc->tfd, usec);
 }
 
+int timer_worker_schedule_next2(void *userdata, time_t usec) {
+    struct timer_worker_context *twc = ((struct timer_worker_context *)((uintptr_t)userdata - offsetof(struct timer_worker_context, user_data)));
+    // struct timer_worker_context *twc = _timer_worker_get_context();
+    return _timer_worker_schedule_next(twc->tfd, usec);
+}
+
 static void _timer_worker_wrapper(void) {
     struct timer_worker_context *twc = _timer_worker_get_context();
     twc->user_func();

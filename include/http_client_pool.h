@@ -71,6 +71,8 @@ int http_client_pool_init_ssl(struct http_client_pool *http_client_pool, size_t 
 void http_client_free(struct http_client_context *cctx);
 struct http_client_context *http_client_pool_create_client(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, struct ribs_context *rctx);
 struct http_client_context *http_client_pool_create_client2(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, struct ribs_context *rctx);
+struct http_client_context *http_client_pool_get_requestv(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, va_list ap);
+struct http_client_context *http_client_pool_get_requestf(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...);
 int http_client_pool_get_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *format, ...) __attribute__ ((format (gnu_printf, 5, 6)));
 int http_client_pool_get_request2(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...) __attribute__ ((format (gnu_printf, 6, 7)));
 int http_client_pool_post_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *data, size_t size_of_data, const char *format, ...) __attribute__ ((format (gnu_printf, 7, 8)));

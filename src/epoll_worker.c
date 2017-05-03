@@ -147,8 +147,8 @@ inline void yield(void) {
     ribs_swapcurcontext(epoll_worker_fd_map[last_epollev.data.fd].ctx);
 }
 
-int queue_current_ctx(void) {
-    while (0 > write(queue_ctx_fd, &current_ctx, sizeof(void *))) {
+int queue_context_swap(struct ribs_context *context) {
+    while (0 > write(queue_ctx_fd, &context, sizeof(void *))) {
         if (EAGAIN != errno)
             return LOGGER_PERROR("unable to queue context: write"), -1;
         /* pipe is full!!! wait for it to clear
@@ -157,11 +157,15 @@ int queue_current_ctx(void) {
         */
         LOGGER_INFO("Warning: context queue is full");
         struct ribs_context *previous_context = epoll_worker_fd_map[queue_ctx_fd].ctx;
-        epoll_worker_fd_map[queue_ctx_fd].ctx = current_ctx;
+        epoll_worker_fd_map[queue_ctx_fd].ctx = context;
         yield(); // come back to me when can write
         epoll_worker_fd_map[queue_ctx_fd].ctx = previous_context;
     }
     return 0;
+}
+
+int queue_current_ctx(void) {
+    return queue_context_swap(current_ctx);
 }
 
 inline void courtesy_yield(void) {

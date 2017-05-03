@@ -42,6 +42,7 @@ void yield(void);
 void courtesy_yield(void);
 int ribs_epoll_add(int fd, uint32_t events, struct ribs_context* ctx);
 struct ribs_context* small_ctx_for_fd(int fd, size_t reserved_size, void (*func)(void));
+int queue_context_swap(struct ribs_context *context);
 int queue_current_ctx(void);
 int epoll_close();
 int ribs_close(int fd);

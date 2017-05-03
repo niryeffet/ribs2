@@ -24,6 +24,7 @@
 
 void *timer_worker_init(size_t stack_size, size_t reserved_size, time_t usec_initial, void (*user_func)(void));
 int timer_worker_schedule_next(time_t usec);
+int timer_worker_schedule_next2(void *userdata, time_t usec);
 void *timer_worker_get_user_data(void);
 
 #endif // _TIMER_WORKER__H_

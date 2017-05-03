@@ -524,6 +524,14 @@ struct http_client_context *http_client_pool_get_requestv(struct http_client_poo
     return cctx;
 }
 
+struct http_client_context *http_client_pool_get_requestf(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char **headers, const char *format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    struct http_client_context *cctx = http_client_pool_get_requestv(http_client_pool, addr, port, hostname, headers, format, ap);
+    va_end(ap);
+    return cctx;
+}
+
 int http_client_pool_get_request(struct http_client_pool *http_client_pool, struct in_addr addr, uint16_t port, const char *hostname, const char *format, ...) {
     va_list ap;
     va_start(ap, format);
