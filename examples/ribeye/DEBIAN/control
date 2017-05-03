@@ -1,0 +1,9 @@
+Package: ribeye
+Version: <VERSION_PLACEHOLDER>
+Section: base
+Priority: optional
+Architecture: amd64
+Depends:
+Maintainer: Lior Amram <lioramr@gmail.com>
+Description: ribeye
+ http server monitor and ping service for load balancers

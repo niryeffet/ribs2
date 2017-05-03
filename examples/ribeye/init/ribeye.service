@@ -1,0 +1,12 @@
+[Unit]
+Description=ribeye, http server monitor and ping service for load balancers
+
+[Service]
+Type=forking
+ExecStart=/bin/bash -c '. /etc/default/ribeye && cd /var/run/ribeye && /usr/local/bin/ribeye -p $${port} -L /var/log/ribeye/ribeye.log -P /var/run/ribeye/ribeye.pid -d $${URLS[*]/#/-u} -B $${bindaddr} -t $${client_timeout}'
+PIDFile=/var/run/ribeye/ribeye.pid
+User=ribeye
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target

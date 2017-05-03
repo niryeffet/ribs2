@@ -1,0 +1,27 @@
+# list of URLS, for example:
+# URLS=(http://localhost:9090/ping1 http://localhost:9091/ping2)
+URLS=()
+
+# the URL may also include additional settings
+# healthy_count:unhealthy_count:interval|http://<addr>:<port>/<URL>
+#
+#
+# for example:
+# URLS=("3:5:10|http://localhost:9090/ping1" "2:2:30|http://localhost:9091/ping2")
+#
+# The above will monitor 2 services.
+#    The first service will be considered UP upon 3 successive successful pings
+#    and will be considered DOWN after 5 successive unsuccessful pings
+#    querying interval is set to 10 seconds
+#
+#    The second service will be considered UP upon 2 successive successful pings
+#    and will be considered DOWN after 2 successive unsuccessful pings
+#    querying interval is set to 30 seconds
+
+port=8088
+bindaddr=127.0.0.1
+# bindaddr=0.0.0.0
+
+# set querying service timeout to 1 second
+client_timeout=1
+

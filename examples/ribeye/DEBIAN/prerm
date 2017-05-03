@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+service ribeye stop
+systemctl -q disable ribeye
+systemctl -q daemon-reload

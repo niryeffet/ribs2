@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+case $1 in
+    purge)
+        # rm -f /etc/default/ribeye
+        rm -rf /var/log/ribeye
+        rm -rf /var/run/ribeye
+        if [ -x "$(command -v deluser)" ]; then
+            deluser --quiet --system ribeye > /dev/null || true
+        else
+            echo >&2 "not removing ribeye system account because deluser command was not found"
+        fi
+        ;;
+    *)
+        ;;
+esac

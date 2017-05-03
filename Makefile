@@ -1,4 +1,4 @@
-EXAMPLES=httpd helloworld mydump httpget
+EXAMPLES=httpd helloworld mydump httpget ribeye
 
 all:
 	@echo "[ribs2] build"
