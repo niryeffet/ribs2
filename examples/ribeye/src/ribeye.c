@@ -349,7 +349,9 @@ int main(int argc, char *argv[])
        specified data (fiber local storage) */
     server.context_size = 0,
     server.bind_addr = htonl(inet_network(bindaddr));
+#if RIBS2_SSL
     server.use_ssl = 0;
+#endif
 
     /* initialize server, but don't accept connections yet */
     if (0 > http_server_init2(&server))
