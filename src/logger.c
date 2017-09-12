@@ -90,9 +90,8 @@ void logger_perror(const char *format, ...) {
     va_list ap;
     va_start(ap, format);
 
-    char tmp[512];
     vmbuf_vsprintf(&log_buf, format, ap);
-    vmbuf_sprintf(&log_buf, " (%s)", strerror_r(errno, tmp, 512));
+    vmbuf_sprintf(&log_buf, " (%s)", strerror(errno));
     va_end(ap);
     end_log_line(STDERR_FILENO);
 }
@@ -104,8 +103,7 @@ void logger_perror_at(const char *filename, unsigned int linenum, const char *fo
 
     vmbuf_sprintf(&log_buf, "[%s:%u]: ", filename, linenum);
     vmbuf_vsprintf(&log_buf, format, ap);
-    char tmp[512];
-    vmbuf_sprintf(&log_buf, " (%s)", strerror_r(errno, tmp, 512));
+    vmbuf_sprintf(&log_buf, " (%s)", strerror(errno));
     va_end(ap);
     end_log_line(STDERR_FILENO);
 }
@@ -117,8 +115,7 @@ void logger_perror_func_at(const char *filename, unsigned int linenum, const cha
 
     vmbuf_sprintf(&log_buf, "[%s:%u] %s(): ", filename, linenum, funcname);
     vmbuf_vsprintf(&log_buf, format, ap);
-    char tmp[512];
-    vmbuf_sprintf(&log_buf, " (%s)", strerror_r(errno, tmp, 512));
+    vmbuf_sprintf(&log_buf, " (%s)", strerror(errno));
     va_end(ap);
     end_log_line(STDERR_FILENO);
 }
