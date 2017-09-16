@@ -2,7 +2,7 @@ TARGET=httpget
 
 SRC=httpget.c
 
-CFLAGS+= -I ../../../include
+CFLAGS+=-I ../../../include -Wno-error=trampolines
 LDFLAGS+= -L../../../lib
 
 ifneq ($(wildcard /usr/include/openssl/ssl.h),)

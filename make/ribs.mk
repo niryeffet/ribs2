@@ -43,7 +43,7 @@ LDFLAGS+=-no-pie
 endif
 LDFLAGS+=-L../lib
 
-CFLAGS+=$(OPTFLAGS) -ggdb3 -W -Wall -Werror -Wextra
+CFLAGS+=$(OPTFLAGS) -ggdb3 -Wall -Werror -Wextra
 
 GCCVER_GTE_4_7=$(shell expr `gcc -dumpversion` \>= 4.7)
 ifeq ($(GCCVER_GTE_4_7),1)
