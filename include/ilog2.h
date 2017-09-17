@@ -48,7 +48,7 @@ static inline uint64_t ilog2_64(uint64_t x) {
 #else
     if (!x)
         return 0;
-    return __builtin_clz(x) ^ 63;
+    return __builtin_clzll(x) ^ 63;
 #endif
 }
 
