@@ -5,7 +5,6 @@ all:
 	@$(MAKE) -C src -s
 	@echo "[ribs2] success"
 	@$(MAKE) -s $(EXAMPLES:%=example_%)
-	@$(MAKE) -s unit_tests
 
 example_%:
 	@echo "[examples/$(@:example_%=%)] build"
@@ -29,6 +28,6 @@ etags:
 	@echo "etags"
 	find . -regex ".*\.[cChH]\(pp\)?" -print | etags -
 
-test:   all
+test:   all unit_tests
 	@echo "Running tests"
 	@./scripts/run_tests.sh

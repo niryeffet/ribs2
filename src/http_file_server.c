@@ -33,9 +33,9 @@
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
-#endif
 
 SSTRL(RIBS_GZ_EXT, "._ribs_gz_");
+#endif
 
 const char *_peer_addr_str(int fd, char *buf) {
     struct sockaddr_in addr;

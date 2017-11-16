@@ -352,7 +352,7 @@ int http_server_init2(struct http_server *server) {
     if (0 == server->port) {
         struct sockaddr_in addr;
         socklen_t addrlen = sizeof(addr);
-        if (0 > getsockname(lfd, &addr, &addrlen))
+        if (0 > getsockname(lfd, (struct sockaddr *)&addr, &addrlen))
             return close(lfd), LOGGER_PERROR("getsockname"), -1;
         server->port = ntohs(addr.sin_port);
     }
