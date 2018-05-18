@@ -85,7 +85,7 @@ int ribs_ssl_set_options(SSL_CTX *ssl_ctx, char *cipher_list, char *dhparam_file
         FILE *paramfile;
         paramfile = fopen(dhparam_file, "r");
         if (!paramfile)
-            return LOGGER_ERROR("Can't open dhparam file"), -1;
+            return LOGGER_PERROR("Can't open dhparam file:"), -1;
         dh = PEM_read_DHparams(paramfile, NULL, NULL, NULL);
         if (!dh)
             return LOGGER_ERROR("Error reading dhparam file"), -1;

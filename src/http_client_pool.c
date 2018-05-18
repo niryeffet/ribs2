@@ -25,7 +25,10 @@
 #include <search.h>
 #include <fnmatch.h>
 #ifdef RIBS2_SSL
-#include <openssl/x509v3.h>
+# include <openssl/x509v3.h>
+# if OPENSSL_VERSION_NUMBER < 0x10100000L
+#  define ASN1_STRING_get0_data ASN1_STRING_data
+# endif
 #endif
 #include "hashtable.h"
 #include "sstr.h"
