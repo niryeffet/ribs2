@@ -12,7 +12,7 @@
     mu_assert_eqi(n, sizeof(arr ## x)/sizeof(arr ## x[0])); \
     size_t i; \
     for (i = 0; i < n; ++i) \
-        mu_assert_eqi_idx(i, a[i], arr ## x[i]); }
+        mu_assert_eqi_idx(i, a[i], *(arr ## x + i)); }
 
 const char *test_ds_var_field() {
     const char *filename = "/tmp/ribs2_vf_arr_test";
