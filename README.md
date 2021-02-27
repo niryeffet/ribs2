@@ -108,7 +108,7 @@ Examples
 ========
 Examples can be found in [examples/](./examples/)
  * [Hello World](examples/helloworld/src) - hello world
- * [MyDump](/examples/mydump/src) - mydump
+ * [mydump](/examples/mydump/src) - mydump
  * [ribeye](/examples/ribeye) - ribeye
  * [httpget](/examples/httpget/src) - httpget
  * [httpd](/examples/httpd) - httpd
