@@ -31,30 +31,30 @@ replacing the preemptive scheduling of threads with events.
 Cooperative "threads" are often called "fibers". Fibers that are
 being controlled exclusively by events are called here "Ribbons".
 
-        +----------------------------+
-        |      Task Management       |
-        +-------------+--------------+
-        | Cooperative |  Preemptive  |
-+---+---+-------------+--------------+
-|   |   |             |              |
-| S | M |             |              |
-| t | a |             |              |
-| a | n |   Event-    |              |
-| c | u |   Driven    |              |
-| k | a |             |              |
-|   | l |             |              |
-| M |   |             |              |
-| a +---+-------------+--------------+
-| n | A |             |              |
-| a | u |             |              |
-| g | t |             |              |
-| e | o |    Ribs2    |              |
-| m | m |   Ribbons   |   Threads    |
-| e | a |             |              |
-| n | t |             |              |
-| t | e |             |              |
-|   | d |             |              |
-+---+---+-------------+--------------+
+            +----------------------------+
+            |      Task Management       |
+            +-------------+--------------+
+            | Cooperative |  Preemptive  |
+    +---+---+-------------+--------------+
+    |   |   |             |              |
+    | S | M |             |              |
+    | t | a |             |              |
+    | a | n |   Event-    |              |
+    | c | u |   Driven    |              |
+    | k | a |             |              |
+    |   | l |             |              |
+    | M |   |             |              |
+    | a +---+-------------+--------------+
+    | n | A |             |              |
+    | a | u |             |              |
+    | g | t |             |              |
+    | e | o |    Ribs2    |              |
+    | m | m |   Ribbons   |   Threads    |
+    | e | a |             |              |
+    | n | t |             |              |
+    | t | e |             |              |
+    |   | d |             |              |
+    +---+---+-------------+--------------+
 Illustration of the differences between
 threads, event-driven and ribbons.
 
