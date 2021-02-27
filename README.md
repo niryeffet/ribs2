@@ -96,10 +96,19 @@ Optional:
 
 Tutorials
 =========
-The following tutorials can be found in doc/
+The following tutorials can be found in [doc/](./doc/)
  * [TUTORIAL01](./doc/TUTORIAL01) - hello world
  * [TUTORIAL02](./doc/TUTORIAL02) - simple file server
  * [TUTORIAL03](./doc/TUTORIAL03) - Using MySQL via ribify
  * [TUTORIAL04](./doc/TUTORIAL04) - log player (http client)
  * [TUTORIAL05](./doc/TUTORIAL05) - dumping data and creating index
  * [TUTORIAL06](./doc/TUTORIAL06) - using a ribified mongodb   
+
+Examples
+========
+Examples can be found in [examples/](./examples/)
+ * [Hello World](examples/helloworld/src) - hello world
+ * [MyDump](/examples/mydump/src) - mydump
+ * [ribeye](/examples/ribeye) - ribeye
+ * [httpget](/examples/httpget/src) - httpget
+ * [httpd](/examples/httpd) - httpd
