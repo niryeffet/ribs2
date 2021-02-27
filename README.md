@@ -97,10 +97,9 @@ Optional:
 Tutorials
 =========
 The following tutorials can be found in doc/
-* [TUTORIAL01](./docs/TUTORIAL01) - hello world
-* [TUTORIAL02](./docs/TUTORIAL02) - simple file server
-* [TUTORIAL03](./docs/TUTORIAL03) - Using MySQL via ribify
-* [TUTORIAL04](./docs/TUTORIAL04) - log player (http client)
-* [TUTORIAL05](./docs/TUTORIAL05) - dumping data and creating index
-* [TUTORIAL06](./docs/TUTORIAL06) - using a ribified mongodb
-=========
+ * [TUTORIAL01](./doc/TUTORIAL01) - hello world
+ * [TUTORIAL02](./doc/TUTORIAL02) - simple file server
+ * [TUTORIAL03](./doc/TUTORIAL03) - Using MySQL via ribify
+ * [TUTORIAL04](./doc/TUTORIAL04) - log player (http client)
+ * [TUTORIAL05](./doc/TUTORIAL05) - dumping data and creating index
+ * [TUTORIAL06](./doc/TUTORIAL06) - using a ribified mongodb   
