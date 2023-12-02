@@ -194,10 +194,9 @@ static void signal_handler(int signum) {
 }
 
 static int _set_signals(void) {
-    static char altstack[SIGSTKSZ];
     static stack_t ss;
     memset(&ss, 0, sizeof(ss));
-    ss.ss_sp = altstack;
+    ss.ss_sp = malloc(SIGSTKSZ);
     ss.ss_size = SIGSTKSZ;
     if (0 > sigaltstack(&ss, NULL))
         return LOGGER_PERROR("sigaltstack"), -1;
