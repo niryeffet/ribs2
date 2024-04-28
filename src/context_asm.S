@@ -116,3 +116,46 @@ __ribs_context_jump:
         ldmia   r4, {r4-r11, sp, pc}
 #endif
 #endif
+.global __ribs_context_start
+#if defined(__aarch64__)
+        // store the state in the current context
+        ldr     x1, =current_ctx
+        ldr     x2, [x1]
+        stp     x19, x20, [x2], #16
+        stp     x21, x22, [x2], #16
+        stp     x23, x24, [x2], #16
+        stp     x25, x26, [x2], #16
+        stp     x27, x28, [x2], #16
+        stp     x29, x30, [x2], #16
+        mov     x3, sp
+        str     x3, [x2], #8
+
+ribs_setcontext:
+        // set current_ctx to the new context
+        ldr     x1, =current_ctx
+        str     x0, [x1]
+
+        // restore the target context
+        ldp     x19, x20, [x0], #16
+        ldp     x21, x22, [x0], #16
+        ldp     x23, x24, [x0], #16
+        ldp     x25, x26, [x0], #16
+        ldp     x27, x28, [x0], #16
+        ldp     x29, x30, [x0], #16
+        ldr     x3, [x0], #8
+        mov     sp, x3
+
+        ret
+
+__ribs_context_jump:
+        bl      __ribs_context_cleanup
+        mov     x0, x19
+        b       ribs_setcontext
+
+__ribs_context_start:
+        // set LP to the trampoline
+        ldr     x30, =__ribs_context_jump
+        // jump to the user function
+        br      x20
+
+#endif

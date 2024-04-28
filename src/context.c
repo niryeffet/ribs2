@@ -23,15 +23,25 @@
 #include "logger.h"
 
 extern void __ribs_context_jump(void);
+extern void __ribs_context_start(void);
 
 void ribs_makecontext(struct ribs_context *ctx, struct ribs_context *pctx, void (*func)(void)) {
+
+#if defined(__aarch64__)
+    /* arm64: align stack to 16 bytes
+    */
+    void *sp = (unsigned long int *) (((uintptr_t) ctx) & -16L);
+    ctx->x30 = (uintptr_t) __ribs_context_start; // LP, this will run first
+    ctx->sp = (uintptr_t)sp;
+    ctx->x19 = (uintptr_t)pctx; // parent context
+    ctx->x20 = (uintptr_t)func; // user function
+#else
 
 #if defined(__i386__) || defined(__x86_64__)
     /* align stack to 16 bytes, assuming function always does push rbp to align.
        func doesn't need to be aligned since it doesn't rely on stack alignment
        (x86_64: needed when using SSE instructions)
     */
-
     void *sp = (unsigned long int *) ((((uintptr_t) ctx) & -16L) -sizeof(uintptr_t));
     *(uintptr_t *)(sp) = (uintptr_t) __ribs_context_jump;
     sp -= sizeof(uintptr_t);
@@ -39,7 +49,6 @@ void ribs_makecontext(struct ribs_context *ctx, struct ribs_context *pctx, void 
 #else
     /* arm: align stack to 8 bytes
     */
-
     void *sp = (unsigned long int *) (((uintptr_t) ctx) & -8L);
     ctx->linked_func_reg = (uintptr_t) __ribs_context_jump;
     ctx->first_func_reg = (uintptr_t) func;
@@ -47,6 +56,7 @@ void ribs_makecontext(struct ribs_context *ctx, struct ribs_context *pctx, void 
 
     ctx->stack_pointer_reg = (uintptr_t) sp;
     ctx->parent_context_reg = (uintptr_t) pctx;
+#endif
 }
 
 struct ribs_context *ribs_context_create(size_t stack_size, size_t reserved_size, void (*func)(void)) {

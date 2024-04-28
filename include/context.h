@@ -34,6 +34,9 @@
 #define NUM_ADDITIONAL_REGS 3
 #endif
 
+#if defined(__aarch64__)
+#include "context_aarch64.h"
+#else
 struct ribs_context {
 #if defined(__x86_64__) || defined(__i386__)
     uintptr_t stack_pointer_reg;
@@ -56,6 +59,7 @@ struct ribs_context {
     uint32_t ribify_memalloc_refcount;
     char reserved[];
 };
+#endif
 
 extern struct ribs_context *current_ctx, *event_loop_ctx;
 
