@@ -44,6 +44,14 @@ static siginfo_t last_sig_info;
 
 #define SIG_CHLD_STACK_SIZE 128*1024
 
+/* glibc >= 2.34 uses dynamic stack size by default */
+/* musl (probably others) does not define it because is not in POSIX */
+#if defined(__USE_DYNAMIC_STACK_SIZE) || !defined(SIGSTKSIZ)
+#define RIBS_SIG_STACK_SIZE 8*1024
+#else
+#define RIBS_SIG_STACK_SIZE SIGSTKSIZ
+#endif
+
 static int _logger_init(const char *filename) {
     int res = 0;
     if ('|' == *filename) {
@@ -196,8 +204,10 @@ static void signal_handler(int signum) {
 static int _set_signals(void) {
     static stack_t ss;
     memset(&ss, 0, sizeof(ss));
-    ss.ss_sp = malloc(SIGSTKSZ);
-    ss.ss_size = SIGSTKSZ;
+    ss.ss_sp = malloc(RIBS_SIG_STACK_SIZE);
+    if (0 == ss.ss_sp)
+        return LOGGER_PERROR("malloc"), -1;
+    ss.ss_size = RIBS_SIG_STACK_SIZE;
     if (0 > sigaltstack(&ss, NULL))
         return LOGGER_PERROR("sigaltstack"), -1;
 
